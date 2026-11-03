@@ -33,6 +33,22 @@
     ]
   },
 
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Read|Glob|Grep|Write|Edit|NotebookEdit|LSP",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "shopt -s nocasematch; input=$(cat); case \"$input\" in *',\"agent_id\":\"'*) ;; *) exit 0 ;; esac; case \"$input\" in *'\"tool_name\":\"Read\"'*) ;; *) echo 'PathWise lockdown: helper agents can only read files.' >&2; exit 2 ;; esac; case \"$input\" in *pathwise_output*|*'~'*) echo 'PathWise lockdown: helper agents cannot read run results.' >&2; exit 2 ;; esac; exit 0",
+            "onFailure": "block",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  },
+
   "sandbox": {
     "enabled": true,
     "failIfUnavailable": false,

@@ -25,17 +25,89 @@ Any KE/KER carrying #1, #2, or #3 also gets a `layers` field: an array drawn fro
 
 Why these four and not others, and why Case Study 2-style genetic/chemical convergence isn't in this list: an article describing two mechanisms (e.g. a chemical branch and a genetic-susceptibility branch) that converge on a shared downstream KE is just ordinary branching/convergence topology — Step 2 already encodes that natively as separate KE chains meeting at one node. It doesn't need a special field; only genuinely *conditional* content (present in this species but not that one, active only past a threshold, magnitude shifted by a modifier, valid only in a time window) needs one of the four fields above.
 
-## Step 1: Read each article
+## How a run is organized
 
-Once, at the start of the run (not again for each article), check whether the `output/` folder already exists and has files in it. If it does, it's from an earlier run: ask the user for a new output folder name (for example `output_2`) and use that for everything below, and don't overwrite the old one without an explicit yes. Reruns (for example after switching extraction mode) would otherwise overwrite `new_terms.json` and the review decisions saved in it. Wherever this document says `output/`, it means whichever folder was chosen.
+A run has two roles. The **main skill** is the conversation the user is talking to. It collects the inputs, launches helper agents, writes every file, runs the merge, and talks to the user. **Helper agents** are fresh Claude instances that the main skill launches with the Agent tool. Each one does exactly one job and returns its result as its final reply.
 
-If ARTICLES names a folder, list every PDF in it now and process in filename order; record the lockdown check result (first line, see "Before anything else" in SKILL.md), the full resolved list, and the extraction mode chosen, in the run log before starting, so there's a record of exactly what got processed this run and how.
+**Phase 1: extract each article independently (Steps 1-5).** Each article gets its own helper agent, the *article agent*, launched with identical instructions (the template below). An article agent sees only its one PDF, this skill's files, and the ontology file. It never sees another article, another agent's result, or anything minted elsewhere in this run, so the order articles are processed in can't change what any one of them produces. Run as many article agents at once as the session allows, in batches if needed (for example 5 at a time, then the next 5). Batching changes nothing, because an agent in a later batch can't see anything from an earlier one (see "Isolation" below).
 
-For each PDF: use the Read tool. If it's more than 10 pages, pass a page range (max 20 pages per call) and read in sequential chunks until the whole document is covered — don't assume one call gets everything. Read the entire article before starting Step 2; a connection between something introduced early and something described later would otherwise get missed. Each page returns as both text and an image, so figures/diagrams are visible as you read — no separate step needed for that.
+**Phase 2: merge across articles (Step 6).** Only once every article agent has returned: merge terms that share an ontology id, then cluster the remaining terms that mean the same thing, using two independent *clustering agents*, then pick each cluster's main term and relabel.
 
-If a PDF fails to open or returns no readable content (likely scanned/image-only), note it in the run log, tell the user right away (see "Per-article callouts" below), and move to the next article rather than stopping the whole run.
+**Phase 3: tally and review (Steps 7-8).** Build `merged_tally.json`, print the summary, and offer the reviews.
 
-Derive this article's slug now: first author's last name + publication year, lowercase (e.g. `smith_2019`). Use it consistently everywhere this article is referenced. If a later article in the batch would produce a slug already used by an earlier one, give the later article a `-b` suffix (then `-c`, and so on); the first article keeps the plain slug, because its file is already written and shouldn't be renamed. If the PDF is unreadable and no slug can be derived, use the PDF's filename (without `.pdf`) in the run log and in the callout.
+### Isolation
+
+The workspace's lockdown settings include a hook that Claude Code runs before every file operation. It refuses any helper agent's attempt to read anything whose path contains `pathwise_output` (the run folder and the `pathwise_output_canary.txt` check file), and refuses every other file tool (writing, editing, searching, listing) for helper agents altogether. The main skill isn't affected. So results can be saved the moment each article finishes, which protects them if a run stops partway, and still no helper agent can see them. On top of that:
+
+- Launch every helper agent fresh (the default Agent tool, never a fork of this conversation).
+- Never put anything from one article (its terms, quotes, results, or slug) into another article agent's prompt.
+- Article agents and clustering agents never write files. They return their result, and the main skill writes it.
+
+The run folder's name must start with `pathwise_output` (for example `pathwise_output_2`), or the hook won't protect it.
+
+### Starting a run (main skill, once)
+
+Check whether `pathwise_output/` already exists and has files in it.
+
+- If its `run_log.md` says `run status: in progress` and lists the same EXTRACTION MODE, TOPIC, TOPIC DESCRIPTION, ontology file, and article list as this run, a previous run stopped partway. Offer to **resume** it. Resuming keeps the articles that already have a line in the run log, and launches article agents only for the rest.
+- Otherwise it's from an earlier run: ask the user for a new folder name that starts with `pathwise_output` (for example `pathwise_output_2`) and use that for everything below, and don't overwrite the old one without an explicit yes. Reruns (for example after switching extraction mode) would otherwise overwrite `new_terms.json` and the review decisions saved in it.
+
+Wherever this document says `pathwise_output/`, it means whichever folder was chosen.
+
+If ARTICLES names a folder, list every PDF in it now, in filename order. Create `pathwise_output/run_log.md` with the lockdown check result as its first line (see "Before anything else" in SKILL.md), then `run status: in progress`, the extraction mode, TOPIC, TOPIC DESCRIPTION, the ontology file path, and the full resolved article list, so there's a record of exactly what got processed this run and how. Change the status line to `run status: complete` once Step 7 has written `merged_tally.json`.
+
+Give each article a provisional slug from its PDF filename (without `.pdf`) for tracking; the article agent derives the real slug in Step 1.
+
+### Launching article agents
+
+Launch one article agent per article, in parallel. Give every agent the same prompt, filling in only the bracketed values:
+
+> You are extracting one article for the PathWise pathway-extraction skill. Read `.claude/skills/pathway-extraction/SKILL.md` (its opening rule and "What this skill is not") and `.claude/skills/pathway-extraction/references/procedure.md` (Scope, Extraction mode, and Steps 1-5, including "Reference pathway example"). Follow Steps 1-5 for this one article only.
+> - PDF: [path]
+> - EXTRACTION MODE: [Simplified or Full]
+> - TOPIC: [topic]
+> - TOPIC DESCRIPTION: [description, or "none"]
+> - ONTOLOGY FILE: [path, or "none: treat every term as new"]
+>
+> Don't read any other file. You can't write files; return your result as your final reply, exactly in the format in "What an article agent returns" in procedure.md.
+
+When the user is asked about mode, topic, articles, and ontology at the start, everything an article agent needs is settled. Article agents can't ask the user anything, so never launch one with an input still open.
+
+### What an article agent returns
+
+One JSON object, in a single fenced code block:
+
+```json
+{
+  "article_slug": "<slug derived in Step 1>",
+  "pdf_file": "<the PDF filename>",
+  "status": "<the run-log status from Step 5, e.g. processed successfully>",
+  "reason": "<one-line reason, or null>",
+  "pages_read": 12,
+  "callout": "<the per-article callout text from 'Per-article callouts', or null>",
+  "pathway_file": { "...": "the complete per-article file from Step 5, or null if excluded or unreadable" },
+  "new_terms": [ "...each entry in the Step 4 format..." ]
+}
+```
+
+When an agent returns, the main skill immediately:
+1. Checks the reply is one JSON object with these keys. If it isn't, relaunch that article once with the same prompt, and if it fails again, log the article as `failed to process` with the reason.
+2. If `pathway_file` isn't null, writes it to `pathwise_output/<aop_id>.json` exactly as returned. Copy it character for character, never by rewriting it from memory, since the quotes must stay exact.
+3. Writes `new_terms` to `pathwise_output/new_terms/<article_slug>.json`.
+4. Appends the article's line to `run_log.md` (Step 5's format).
+5. Passes the `callout` on to the user straight away (see "Per-article callouts").
+
+Article agents run in parallel, so callouts arrive in the order the agents finish, not the filename order. That's fine. The run log records each article as it's written.
+
+If two articles produce the same slug, the one written first keeps it, and the later one gets a `-b` suffix (then `-c`, and so on). Apply the suffix to the file names and to every `source_articles` and `prompted_by` value in that article's result before writing it.
+
+## Step 1: Read the article (article agent)
+
+For the PDF: use the Read tool. If it's more than 10 pages, pass a page range (max 20 pages per call) and read in sequential chunks until the whole document is covered — don't assume one call gets everything. Read the entire article before starting Step 2; a connection between something introduced early and something described later would otherwise get missed. Each page returns as both text and an image, so figures/diagrams are visible as you read — no separate step needed for that.
+
+If the PDF fails to open or returns no readable content (likely scanned/image-only), stop and return a result with status `failed to open` or `no readable text found`, `pathway_file` null, and the matching callout. The main skill tells the user and carries on with the other articles.
+
+Derive this article's slug now: first author's last name + publication year, lowercase (e.g. `smith_2019`). Use it consistently everywhere this article is referenced. Don't worry about another article having the same slug; the main skill handles that when it writes the files. If the PDF is unreadable and no slug can be derived, use the PDF's filename (without `.pdf`).
 
 ## Step 1b: Confirm this article is actually relevant to TOPIC
 
@@ -43,7 +115,7 @@ Do this after finishing the full read of the article and before starting Step 2 
 
 The bar is substantive engagement with TOPIC (and TOPIC DESCRIPTION, if given), not mere adjacency. An article that mentions TOPIC in passing, cites it as background for a different mechanism, or covers a related-but-distinct pathway that never actually connects to what TOPIC names, is not relevant, even if it's well-written and pathway-shaped in isolation. This is the same "must connect to every element TOPIC names" discipline from Step 2 (see below), applied to the whole article instead of one candidate key event — a batch assembled by keyword search routinely pulls in a few articles that are adjacent but don't actually belong, and this is the point where they get caught rather than quietly producing a padded pathway.
 
-- **Clearly off-topic** — the article isn't substantively about TOPIC at all. Exclude it: write one line to `output/run_log.md` as `excluded — not relevant to TOPIC (reason: <one line>)`, don't produce a pathway file for it, and move to the next article. The one-line reason is required, not optional — it's what the user is told live and what the end-of-run recap repeats, so a bare label isn't enough. Don't spend Steps 2-5 on an article you've already determined doesn't belong.
+- **Clearly off-topic** — the article isn't substantively about TOPIC at all. Exclude it: return status `excluded — not relevant to TOPIC` with the one-line reason and `pathway_file` null, so the run log records it that way. The one-line reason is required, not optional — it's what the user is told live and what the end-of-run recap repeats, so a bare label isn't enough. Don't spend Steps 2-5 on an article you've already determined doesn't belong.
 - **Genuinely on-topic** — proceed to Step 2 normally. If Step 2 then produces zero key events, that is not a normal result: log it as `processed — on-topic, but no key events extracted` and handle it like the borderline-with-zero case below (flagged prominently).
 - **Borderline** (touches TOPIC's subject area but you're not certain it clears the bar) — don't exclude it on suspicion alone. Write down a one-line reason for the uncertainty (what part of TOPIC it touches and what's missing or unclear). Proceed to Step 2 and let the evidence requirement do the filtering: if nothing in the article actually supports a TOPIC-connected key event, Step 2 will legitimately produce zero key events for it. That's a real, informative outcome in its own right. Log it as `processed — borderline on-topic (reason: <one line>)`, or if Step 2 produced zero key events, as `processed — borderline on-topic, no TOPIC-relevant content found (reason: <one line>)`, rather than silently producing an empty file with no explanation.
 
@@ -53,7 +125,7 @@ Don't use this step to second-guess an article's scientific quality or methodolo
 
 ## Per-article callouts — tell the user live
 
-Right after each article is finished (its file written in Step 5, or it was skipped in Step 1/1b), check whether it falls into one of the five cases below. If so, say so in chat immediately, in a sentence or two — don't hold it for the end of the run, and don't leave it only in `run_log.md`.
+At the end of its work, the article agent checks whether its article falls into one of the five cases below, and if so writes the callout text into its result. The main skill says it in chat as soon as that agent returns, in a sentence or two. Don't hold it for the end of the run, and don't leave it only in `run_log.md`.
 
 - **Failed to parse** — name the article, say the PDF was unreadable and skipped, and that it didn't contribute to the run.
 - **Excluded as entirely off-topic** — name the article and give the one-line reason from Step 1b.
@@ -101,12 +173,12 @@ Encode as:
 If the article supports the same key event or relationship in more than one place (separate sentences, possibly with different citations), keep the clearest quote as `evidence` and add each further quote to an `additional_evidence` array on the same node: `[{ "quote": "<verbatim quote>", "reference_ids": [] }]`. Each quote keeps its own citations, so a source cited for only one of the sentences isn't lost. Leave `additional_evidence` off when there's only one quote.
 
 **The `relationship` field always has exactly two tags, in a fixed order, separated by a comma:** the first says what happens to the `source` event (for example activated, inhibited, metabolized, bound), and the second says what that does to the `target` event. For example, `["oxidizes_to", "formed_from"]` on an arrow from CYP2E1 to NAPQI, or `["metabolized_by", "binds_to"]` on an arrow from a parent drug to its enzyme. The tags can be any relationship terms (`metabolized_by`, `binds_to`, `increases`, `decreases`, and so on), and the two are allowed to be different words. Rules:
-- Follow the article's own wording as closely as possible for each side. If the article describes both sides, use its words for each (for example `["oxidizes_to", "formed_from"]`). Step 4 then reuses an existing verb from the ontology or from earlier in the run when it means the same thing.
+- Follow the article's own wording as closely as possible for each side. If the article describes both sides, use its words for each (for example `["oxidizes_to", "formed_from"]`). Step 4 then reuses an existing verb from the ontology when it means the same thing.
 - If the relationship reads the same from both sides (for example `binds_to`), repeat the word: `["binds_to", "binds_to"]`.
 - If the article states only one side, repeat that word: `["activates", "activates"]`. Don't make up a counterpart verb the article doesn't use.
 - The two tags can differ in direction. `["activates", "inhibits"]` is a valid relationship: the source is activated, and that inhibits the target. It is a different relationship from `["inhibits", "activates"]`.
 - An opposite claim about the same step is a different pathway, not the same one. If one article says A activates B (`["activates", "activates"]`) and another says A inhibits B (`["inhibits", "inhibits"]`), that leads to a different outcome, so they stay separate relationships and are listed in `relationship_disagreement_flags` (Step 7).
-- When a later article describes the same relationship as an earlier one, reuse the verbs already minted for it, in the same positions (Step 4). For example, if article 1 recorded CYP2E1 to NAPQI as `["oxidizes_to", "formed_from"]` and article 2 describes the same thing, article 2 also uses `["oxidizes_to", "formed_from"]`, even if its wording is "forms". Use different verbs only when the article describes a different biological relationship. Step 7 counts two articles as the same relationship only when both verbs match exactly.
+- Each article is extracted on its own, so two articles may word the same relationship differently (for example `["oxidizes_to", "formed_from"]` in one and `["oxidizes_to", "forms"]` in another). Don't try to guess how other articles word it. Step 6 compares relationships across articles once every article is done, and Step 7 counts two articles as the same relationship only when both verbs match exactly after that.
 
 `id` values (KE:0, KER:0, etc.) only need to be unique within this one article's file. Every KER's `source`/`target` must point to a real KE id in the same file. Every KE and KER must have a unique id within the file, no repeats.
 
@@ -166,11 +238,11 @@ Go back through every KE and KER from Step 2. For each quote on it, look at the 
 
 If a quote's sentence carries no inline citation at all (it's the reviewing authors' own uncited synthesis, or a figure with no citation in its caption), leave its `reference_ids` as `[]` — don't guess a source for it, and don't leave the field missing entirely; an empty array and "not yet checked" need to stay distinguishable, so always set it one way or the other before Step 5.
 
-## Step 4: Align terminology against the ontology and everything minted so far
+## Step 4: Align terminology against the ontology
 
 Applies to every `biological_entity_id` AND every `relationship` type written in Step 2 — both go through the same process.
 
-**First check:** does this concept already exist, under this name or different wording, in the ontology file, or in terms already minted earlier in this same run (article 2 onward)? If yes, reuse that existing ID exactly.
+**First check:** does this concept already exist, under this name or different wording, in the ontology file? If yes, reuse that existing ID exactly. The ontology file is the only thing to check against. You don't see other articles in this run, and terms that other articles mint are matched up later, in Step 6.
 
 If not confident it's the same concept, **default to treating it as new rather than merging**, but flag it: add `"possible_duplicate_of": "<existing_id>"` and a one-line `"reason"` explaining the resemblance, so it surfaces for manual review instead of silently becoming an unreviewed merge or an unreviewed new term. Only skip this flag when genuinely confident it's a clean reuse or a clean new term.
 
@@ -184,24 +256,124 @@ If no match exists at all, before writing a free-text term, check for an already
 
 Relationship types follow the same reuse-or-mint discipline, not a separate one, and this applies to both tags of every relationship (the source-side tag and the target-side tag, Step 2). Check the ontology's relationship-type category first (activates, inhibits, binds_to, etc.) and reuse an existing verb whenever it captures the actual meaning, even if the article's phrasing is more elaborate. Only mint a new relationship term when an existing one would genuinely lose meaning, not just because the article's wording is more specific or colorful. A new relationship term gets a clear `id`, a one-sentence `definition`, and a `direction` field describing which end is earlier/causal, matching the format of existing relationship-type entries. Log it in `new_terms.json` under the relationship-type category, not mixed in with entity terms.
 
-Record every genuinely new term (don't write into the ontology file itself): you'll add it to `output/new_terms.json` in Step 5, so the file builds up article by article and survives an interrupted run. Each entry is `{ "id": "...", "definition": "...", "category": "entity" | "relationship_type", "direction": "..." (relationship types only), "prompted_by": ["<article_slug>", ...], "possible_duplicate_of": "...", "reason": "..." }`, with the last two present only when flagged. If a later article mints or reuses a term already in the file, add its slug to `prompted_by` rather than adding a second entry.
+Record every genuinely new term (don't write into the ontology file itself) in the `new_terms` list of the result you return (see "What an article agent returns"). Each entry is `{ "id": "...", "definition": "...", "category": "entity" | "relationship_type", "direction": "..." (relationship types only), "prompted_by": ["<article_slug>"], "possible_duplicate_of": "...", "reason": "..." }`, with the last two present only when flagged. `possible_duplicate_of` can only name a term in the ontology file. List each new term once, even if the article uses it several times.
 
-## Step 5: Validate and write this article's file now
+## Step 5: Validate and return this article's result
 
-Before moving to the next article, check: every KE and KER id is unique within this file; every KER's source/target points to a real KE id; every KE has `source_articles`, `source_type`, and `evidence` set; every KER has `source_articles` and `evidence` set, and its `relationship` has exactly two entries; every `additional_evidence` quote is also an exact excerpt; every `evidence` value is an actual excerpt from the article's own text or figure (not a paraphrase or something generated to sound plausible); `source_article` (Step 3A) and the article's `references` list (Step 3B) are both present; every KE and KER has a `quality` object whose two values are each `true`, `false`, or `"unknown"`, every `true` or `false` has a matching verbatim quote in `quality.quotes`, and `quotes` is empty when both values are `"unknown"`; every quote (the `evidence` quote, each `additional_evidence` entry, each `quality.quotes` entry, and in Full mode each `special_circumstances` / `confounders` entry and the `developmental_window`) has its `reference_ids` set (Step 3C) — `[]` is fine, missing is not, and every `ref_id` named actually exists in this file's `references` list. In Full mode, also check that every `species_annotation`, `molecular_basis`, `gate_type`, `active_in`, `absent_in`, `note`, `special_circumstances`, `confounders`, `developmental_window`, and `initiating_event_class` value is backed by a verbatim quote (the KE/KER's own `evidence` or `additional_evidence` quote, or for the entries that carry their own, that entry's quote) — not a paraphrase, and not something added because it seemed biologically plausible. Also check that `has_special_circumstances` is true exactly when `special_circumstances` is non-empty, and that every `layers` array lists exactly the layers whose annotations are actually present on that node (and that nodes with none of those annotations have no `layers`).
+Before returning, check: every KE and KER id is unique within this file; every KER's source/target points to a real KE id; every KE has `source_articles`, `source_type`, and `evidence` set; every KER has `source_articles` and `evidence` set, and its `relationship` has exactly two entries; every `additional_evidence` quote is also an exact excerpt; every `evidence` value is an actual excerpt from the article's own text or figure (not a paraphrase or something generated to sound plausible); `source_article` (Step 3A) and the article's `references` list (Step 3B) are both present; every KE and KER has a `quality` object whose two values are each `true`, `false`, or `"unknown"`, every `true` or `false` has a matching verbatim quote in `quality.quotes`, and `quotes` is empty when both values are `"unknown"`; every quote (the `evidence` quote, each `additional_evidence` entry, each `quality.quotes` entry, and in Full mode each `special_circumstances` / `confounders` entry and the `developmental_window`) has its `reference_ids` set (Step 3C) — `[]` is fine, missing is not, and every `ref_id` named actually exists in this file's `references` list. In Full mode, also check that every `species_annotation`, `molecular_basis`, `gate_type`, `active_in`, `absent_in`, `note`, `special_circumstances`, `confounders`, `developmental_window`, and `initiating_event_class` value is backed by a verbatim quote (the KE/KER's own `evidence` or `additional_evidence` quote, or for the entries that carry their own, that entry's quote) — not a paraphrase, and not something added because it seemed biologically plausible. Also check that `has_special_circumstances` is true exactly when `special_circumstances` is non-empty, and that every `layers` array lists exactly the layers whose annotations are actually present on that node (and that nodes with none of those annotations have no `layers`).
 
-Write `output/<aop_id>.json` now (see "Naming" in Step 2), containing `aop_id`, `extraction_mode`, `source_article`, `key_events`, `key_event_relationships`, and `references`. Do this immediately — don't wait until all articles are processed, so an interrupted run still leaves completed work on disk. In the same step, add any terms this article minted to `output/new_terms.json` (create it with this article's terms if it's the first, otherwise add to it; see Step 4 for the entry format). Append one line to `output/run_log.md`: article slug, one of processed successfully / processed — borderline on-topic (reason) / processed — borderline on-topic, no TOPIC-relevant content found (reason) / processed — on-topic, but no key events extracted / excluded — not relevant to TOPIC (reason) / failed to open / no readable text found, plus pages read. Then apply "Per-article callouts" above.
+Then return the result (see "What an article agent returns"). `pathway_file` is the complete per-article file, containing `aop_id` (see "Naming" in Step 2), `extraction_mode`, `source_article`, `key_events`, `key_event_relationships`, and `references`. `status` is one of: processed successfully / processed — borderline on-topic / processed — borderline on-topic, no TOPIC-relevant content found / processed — on-topic, but no key events extracted / excluded — not relevant to TOPIC / failed to open / no readable text found, with the one-line `reason` where the status has one. The main skill writes the files and the run-log line (`<article_slug> — <status> (reason: <reason>) — <pages_read> pages read`) as soon as the result arrives, so an interrupted run keeps every finished article.
 
-## Step 6: Repeat Steps 1-5 for the next article
+## Step 6: Merge terms across articles (main skill)
 
-Continue through the full ARTICLES list. Each new article gets checked against the original ontology file plus every term minted from earlier articles in this run, so the same concept described differently across articles converges on one ID instead of being reinvented each time.
+Starts only once every article agent has returned and its result is written. Every article was extracted on its own, so the same concept will often carry different names in different articles (`gsh_depletion` in one, `glutathione_depletion` in another). This step finds those and gives each concept one name. Key events are done first, and relationships second, because two relationships can only be compared once the key events at both ends have been settled.
+
+Before the first relabel, copy every per-article file into `pathwise_output/pre_relabel_backup/`, so the files exactly as the article agents returned them are kept. Every relabel in this step follows the same rules as Step 8 (see "What relabeling may and may not do"): a targeted replacement of just the term text, never rewriting a whole file from memory, and never touching quotes or references.
+
+### 6a. Merge by id
+
+Gather every entity term used across the per-article files, with the articles that use it. Terms with the same id are already the same term: two articles that both reused `cyp2e1` from the ontology, or both happened to mint `gsh_depletion`, need no decision. Also treat two ids as the same when they're identical after lowercasing and treating spaces, hyphens, and underscores alike (`GSH-depletion` and `gsh_depletion`). Nothing else is merged in this sub-step: not plurals, not abbreviations, not synonyms. Those go to clustering.
+
+### 6b. Cluster key events (two clustering agents)
+
+Build the **key-event term list**: one entry per distinct entity term left after 6a, each with its id, its definition (from the ontology, or from the `new_terms` the article agents returned), whether it's in the ontology file, the articles that use it, and one evidence quote from each of those articles. Number the entries (`T1`, `T2`, ...).
+
+Launch two clustering agents, fresh and at the same time, with identical prompts. Neither sees the other's answer. Each gets the term list, the rules in "When two terms are the same concept" below, and this instruction:
+
+> Group the terms that name the same biological concept. Return one JSON object in a fenced code block: `{ "groups": [ { "members": ["T3", "T8"], "reason": "<one line>", "confidence": "high" | "medium" | "low" } ] }`. List only groups of two or more terms. Leave out any term that has no match. Judge only from the names, definitions, and quotes given. Don't use outside sources or general knowledge of how this pathway usually goes, and don't read any files.
+
+Then compare the two answers, pair by pair. Each group of n terms stands for every pair inside it (n × (n − 1) ÷ 2 pairs; a group of 3 terms is 3 pairs).
+- **Agreed pair:** both agents put the two terms in the same group. Merge it automatically.
+- **Disputed pair:** only one agent put them together. Don't merge it. List it in `disputed_pairs` in `clusters.json`; it goes to the review in 8b.
+- **Neither:** the terms stay separate.
+
+The final clusters are the groups of terms joined by agreed pairs (if T1–T2 and T2–T3 are both agreed, T1, T2 and T3 form one cluster).
+
+**Loop check:** before merging a cluster, check every per-article file for a relationship that connects two of the cluster's terms, directly or through a chain of other key events. Merging those would make a term lead to itself. Don't merge that cluster automatically; move its pairs to `disputed_pairs` with the reason `would create a loop in <article_slug>`.
+
+### When two terms are the same concept
+
+> **Provisional.** These rules are a starting point, to be replaced by the PathWise ontology rules once they're agreed. Keep them in this one section, so updating them doesn't touch anything else.
+
+- Two terms are the same concept when they name the same biological entity or event at the same level of detail, as set by the "Reference pathway example" granularity. Different spellings, abbreviations, and word order of the same thing count as the same (`gsh_depletion` and `glutathione_depletion`).
+- A broader term and a narrower one aren't the same (`liver_injury` and `centrilobular_necrosis`). Neither are a molecule and an event involving it (`napqi` and `napqi_formation`), or opposite changes (`gsh_increase` and `gsh_depletion`).
+- When unsure, don't group them. A missed merge shows up in the tally and the review; a wrong merge hides a real difference.
+
+### 6c. Choose each cluster's main term
+
+> **Provisional.** Replace with the PathWise ontology rules for preferred terms once they're agreed.
+
+For each cluster, pick the main term in this order:
+1. A term already in the ontology file. If the cluster has two of them, don't merge it automatically; move its pairs to `disputed_pairs` with the reason `two existing ontology terms`, because the ontology file is never relabeled.
+2. A term that follows a standard naming source from Step 4 (an HGNC gene symbol, a PubChem name, or a standard clinical term).
+3. The term used by the most articles.
+4. The most precise wording under the granularity rule (`glutathione_depletion` over `gsh_loss`).
+5. If it's still a tie, the term that comes first alphabetically. Mark the cluster `main_term_tie: true`, so the review in 8d shows it.
+
+Relabel every other member to the main term in every per-article file (`biological_entity_id` only).
+
+### 6d. Cluster relationships (two clustering agents)
+
+After the key-event relabel, find every pair of key events that's connected by relationships with more than one distinct tag pair across articles (for example `napqi` to `gsh_depletion` as `["depletes", "depletes"]` in one article and `["reduces", "reduces"]` in another). Each such pair of key events is one **relationship group**, numbered `R1`, `R2`, and so on. Give each group's tag pairs, the articles that use each pair, and one evidence quote for each.
+
+Launch two clustering agents, fresh and at the same time, with identical prompts:
+
+> For each relationship group, sort its tag pairs into sets that mean the same thing. Return one JSON object in a fenced code block: `{ "groups": [ { "group": "R1", "same_meaning_sets": [ { "pairs": [["depletes", "depletes"], ["reduces", "reduces"]], "reason": "<one line>", "confidence": "high" | "medium" | "low" } ] } ] }`. List only sets of two or more pairs. Pairs that describe opposite effects (`activates` and `inhibits`, `increases` and `decreases`) are never the same meaning. The order of the two tags matters: `["activates", "inhibits"]` and `["inhibits", "activates"]` are different. Judge only from the tags and quotes given, and don't read any files.
+
+Compare the two answers pair by pair, as in 6b. Merge agreed pairs. For each merged set, keep the tag pair used by the most articles; if that's a tie, keep the pair whose tags are both already in the ontology file, and otherwise the first alphabetically. Change the `relationship` array on that one relationship (the one between those two key events) in each article that used another pair from the set. Change nothing else: not other relationships that use the same verbs, and not `evidence`, `additional_evidence`, `reference_ids`, `quality`, or the `references` list. Disputed pairs aren't merged. Step 7 lists them in `relationship_disagreement_flags` for the review in 8c.
+
+### 6e. Write the clustering record and the agreement numbers
+
+Write `pathwise_output/clusters.json`:
+
+```json
+{
+  "key_event_clusters": [
+    {
+      "main_term": "glutathione_depletion",
+      "main_term_rule": "most articles",
+      "main_term_tie": false,
+      "members": [
+        { "term": "glutathione_depletion", "in_ontology": false, "articles": ["smith_2019", "lee_2020"] },
+        { "term": "gsh_depletion", "in_ontology": false, "articles": ["jones_2021"] }
+      ],
+      "reasons": { "agent_a": "<one line>", "agent_b": "<one line>" }
+    }
+  ],
+  "relationship_clusters": [
+    {
+      "source": "napqi",
+      "target": "glutathione_depletion",
+      "kept_relationship": ["depletes", "depletes"],
+      "merged_pairs": [ { "relationship": ["reduces", "reduces"], "articles": ["jones_2021"] } ],
+      "reasons": { "agent_a": "<one line>", "agent_b": "<one line>" }
+    }
+  ],
+  "disputed_pairs": [
+    { "kind": "key_event", "terms": ["napqi_formation", "napqi_production"], "proposed_by": "agent_a", "reason": "<the proposing agent's reason, or why it wasn't merged automatically>" }
+  ]
+}
+```
+
+Write `pathwise_output/clustering/agreement.json` with the agreement numbers, separately for key events and for relationships:
+- `agreed_pairs`, `only_agent_a`, `only_agent_b`: each the full list of pairs, so anyone can recount the numbers.
+- `agreed_count`, `only_agent_a_count`, `only_agent_b_count`: the lengths of those lists.
+- `agreement_percent`: `agreed_count ÷ (agreed_count + only_agent_a_count + only_agent_b_count) × 100`, rounded to a whole number. If both agents proposed nothing, write `null` and say so; it isn't 0% or 100%.
+
+Also save each agent's raw answer, as returned, to `pathwise_output/clustering/key_events_agent_a.json`, `key_events_agent_b.json`, `relationships_agent_a.json`, and `relationships_agent_b.json`.
+
+Shell commands are blocked, so these numbers are counted, not calculated by code. Count from the lists you've written into the file, and check that each count matches its list's length before saving.
+
+### 6f. Build `new_terms.json`
+
+Combine every article's `pathwise_output/new_terms/<article_slug>.json` into `pathwise_output/new_terms.json`: one entry per distinct new term, with `prompted_by` listing every article that minted it. For a term that was clustered into a different main term, keep its entry and mark it `"status": "merged_into"`, `"merged_into": "<main term>"`, and `"merged_by": "clustering"`. Its other fields stay as minted, so the history is visible. Give each main term's entry a `synonyms` list of the terms merged into it. The per-article files in `pathwise_output/new_terms/` aren't changed.
 
 ## Step 7: Merge across articles and produce the remaining output files
 
-Once every article has its own file (Step 5), read them all back in and produce:
+Once Step 6 has finished relabeling, read every per-article file back in and produce:
 
-- `output/new_terms.json` is already built, article by article, in Step 5. In Step 7 only check it: every term used in any per-article file is either in the ontology file or in `new_terms.json`. Don't rewrite it here. If Step 7's merge is run again later (Step 8 does this after relabeling), regenerate **only** `merged_tally.json`, because by then `new_terms.json` also holds the review decisions and `merged_into` marks from Step 8.
-- `output/merged_tally.json` — built by joining the per-article files on each KE's `biological_entity_id` (not its local `KE:N` id, which only exists within one article) and each KER's source entity, target entity, and relationship terms. A `relationship` field is two tags, the source-side tag first and the target-side tag second (Step 2). Articles describe the **same** relationship only when they connect the same two key events and both tags match exactly, position by position: first tag with first tag, second tag with second tag. The tags are never treated as an unordered set, so `["activates", "inhibits"]` and `["inhibits", "activates"]` are different relationships. Because Step 4 makes later articles reuse the verbs already minted for the same concept, articles describing the same relationship should already carry the same pair. When the same two key events end up with more than one distinct pair, keep each pair as its own entry and list them in a `relationship_disagreement_flags` array (the two key events, each pair, and which articles use it). The difference may be a real disagreement (for example `["activates", "activates"]` versus `["inhibits", "inhibits"]`) or a missed reuse in Step 4 (for example `["oxidizes_to", "formed_from"]` versus `["oxidizes_to", "forms"]`). Don't try to judge which; a human decides. For each, record:
+- `pathwise_output/new_terms.json` is already built, in Step 6f. In Step 7 only check it: every term used in any per-article file is either in the ontology file or in `new_terms.json`. Don't rewrite it here. If Step 7's merge is run again later (Step 8 does this after relabeling), regenerate **only** `merged_tally.json`, because by then `new_terms.json` also holds the review decisions and `merged_into` marks from Step 8.
+- `pathwise_output/merged_tally.json` — built by joining the per-article files on each KE's `biological_entity_id` (not its local `KE:N` id, which only exists within one article) and each KER's source entity, target entity, and relationship terms. A `relationship` field is two tags, the source-side tag first and the target-side tag second (Step 2). Articles describe the **same** relationship only when they connect the same two key events and both tags match exactly, position by position: first tag with first tag, second tag with second tag. The tags are never treated as an unordered set, so `["activates", "inhibits"]` and `["inhibits", "activates"]` are different relationships. Because Step 6d has already merged the tag pairs both clustering agents agreed mean the same thing, articles describing the same relationship should mostly carry the same pair by now. When the same two key events end up with more than one distinct pair, keep each pair as its own entry and list them in a `relationship_disagreement_flags` array (the two key events, each pair, and which articles use it). The difference may be a real disagreement (for example `["activates", "activates"]` versus `["inhibits", "inhibits"]`) or a same-meaning pair the clustering agents disagreed on in Step 6d (for example `["oxidizes_to", "formed_from"]` versus `["oxidizes_to", "forms"]`). Don't try to judge which; a human decides. For each, record:
   - `article_count` and `supporting_articles`: how many articles support it, and which ones — the original tally.
   - `distinct_sources_cited` and `cited_sources`: collect every `ref_id` on every quote of every contributing article's version of this node (the `evidence` quote, each `additional_evidence` entry, each `quality.quotes` entry, and in Full mode each `special_circumstances` / `confounders` entry and the `developmental_window`), resolve them back to that article's own reference-list entries (author/year/title/journal/doi), then deduplicate across **all** contributing articles — the same primary source is often cited by more than one review in the batch, and that shouldn't inflate the count. Decide whether two entries are the same paper in this order, never on first author + year alone when titles are available (two different "Jones et al. 2012" papers must stay separate): (1) if both entries have a `doi`, same paper iff the DOIs match (case-insensitive); (2) otherwise, if both have a title and the normalized titles match (lowercased, punctuation and extra whitespace stripped): if the years also match, same paper; if the first author matches but the years differ (typically a preprint versus its published version), treat it as a **likely match** — count it once — and list it in `ambiguous_source_matches` for manual review, noting whether the journals match (if both entries have one) or differ; if the first author differs too, treat them as different papers; (3) only if a title is missing on either or both sides, fall back to first author + year, and list that pairing in an `ambiguous_source_matches` array in `merged_tally.json` (both entries, which articles they came from) so a human can confirm — don't silently merge or split it. Before writing `merged_tally.json`, re-check that every source merged via this fallback appears in `ambiguous_source_matches`; a fallback merge that isn't listed there is a mistake. Where titles differ slightly because of typos or abbreviation but author and year match, treat as different and list it in `ambiguous_source_matches` too; undercounting a shared source is the safer error than silently merging two different papers. `cited_sources` is the deduplicated list (`{ "first_author": ..., "year": ..., "title": ..., "journal": ..., "doi": ... }`); `distinct_sources_cited` is its length. This is a different number from `article_count` on purpose — a KE backed by 1 article citing 4 distinct primary sources is better evidenced than one backed by 3 articles all citing the same single source, and this makes that visible.
   - `quality`: for each criterion separately, which contributing articles gave `true`, `false`, and `"unknown"` for their own version of this node: `{ "counterfactual_evidence": { "true": [...], "false": [...], "unknown": [...] }, "disprove_attempts": { "true": [...], "false": [...], "unknown": [...] } }`. The length of each list is the count. This is not a combined value: each article's own assessment and its supporting quotes stay in its per-article file, and the two criteria are never added together.
@@ -286,13 +458,14 @@ Once every article has its own file (Step 5), read them all back in and produce:
 
 ## Step 8: End-of-run summary and interactive checkpoints
 
-Runs after Step 7, once every article's file and `merged_tally.json` are written. 8a only adds what's said to the user. The two optional review checkpoints (8b and 8c) can change term labels inside the per-article files and then regenerate `merged_tally.json`, and nothing else (see "What relabeling may and may not do"). To keep that safe: before the first relabel of the session, copy every per-article pathway file into `output/pre_relabel_backup/`; make each relabel a targeted replacement of just the term text, never by re-writing a whole JSON file from memory, which risks altering quotes; and regenerate `merged_tally.json` only after the relabeling is finished. If the session is interrupted partway, the per-article files are the source of truth, so just regenerate the tally from them. The ontology file itself is never modified at any point in Step 8; every new or adopted term lives in `output/new_terms.json`, for a human to add to the ontology later.
+Runs after Step 7, once every article's file and `merged_tally.json` are written. 8a only adds what's said to the user. The three optional review checkpoints (8b, 8c and 8d) can change term labels inside the per-article files, update `clusters.json`, and then regenerate `merged_tally.json`, and nothing else (see "What relabeling may and may not do"). To keep that safe: `pathwise_output/pre_relabel_backup/` already holds the files as the article agents returned them (Step 6), so never overwrite it; make each relabel a targeted replacement of just the term text, never by re-writing a whole JSON file from memory, which risks altering quotes; and regenerate `merged_tally.json` only after the relabeling is finished. If the session is interrupted partway, the per-article files are the source of truth, so just regenerate the tally from them. The ontology file itself is never modified at any point in Step 8; every new or adopted term lives in `pathwise_output/new_terms.json`, for a human to add to the ontology later.
 
 ### 8a. Summary (always print)
 
 - Counts: total key events and total relationships in the merged tally, and how many relationships have `article_count` of 2 or more. Also the batch counts (articles processed / excluded as off-topic / failed to read) and new terms minted. In Full mode, also how many key events/relationships carry each kind of Full-mode annotation.
 - A named recap of every article that triggered a callout during parsing (failed / excluded off-topic / borderline / borderline with zero key events / on-topic with zero key events): article name plus its one-line reason, e.g. "1 article flagged: smith_2019 — borderline on-topic (reason: ...)". If none, say none.
-- The possible-duplicate term pairs, listed **by name only** (e.g. "mitochondrial membrane rupture" vs. "mitochondrial swelling") — no reasons here; the reason is first shown in 8b. This is how the user learns the pairs exist even if they skip the review.
+- Clustering: how many key-event clusters and relationship merges Step 6 made automatically, and how much the two clustering agents agreed, as the `agreement_percent` for key events and for relationships from `clustering/agreement.json` (e.g. "Key events: 14 clusters, the two clustering agents agreed on 82% of proposed merges"). If an agreement number is `null`, say that neither agent proposed any merges.
+- The possible-duplicate term pairs (the `disputed_pairs` from `clusters.json`, plus any term an article agent flagged with `possible_duplicate_of`), listed **by name only** (e.g. "mitochondrial membrane rupture" vs. "mitochondrial swelling") — no reasons here; the reason is first shown in 8b. This is how the user learns the pairs exist even if they skip the review.
 - The relationship disagreements, listed by the two key events only (e.g. "napqi to gsh_depletion"), so the user knows they exist even if they skip the review in 8c. If none, leave this line out.
 - Do **not** include single-source or single-citation counts or flags anywhere in this summary — those stay in the JSON only.
 
@@ -301,15 +474,16 @@ Runs after Step 7, once every article's file and `merged_tally.json` are written
 Ask: "Would you like to review the possible duplicate terms now?"
 
 - **No** — move on; the pairs stay flagged in `new_terms.json` for later.
-- **Yes** — go through the pairs one at a time. For each, show both terms and the one-line reason they were flagged, and let the user choose **merged** or **kept separate**. If merged, ask which of the two is the canonical term. If one of the two is already in the ontology file, it must be the canonical one — the ontology file is never relabeled.
+- **Yes** — go through the pairs one at a time. For each, show both terms and the one-line reason they were flagged (for a disputed pair, which clustering agent proposed it and why, or why it wasn't merged automatically), and let the user choose **merged** or **kept separate**. If merged, ask which of the two is the canonical term. If one of the two is already in the ontology file, it must be the canonical one — the ontology file is never relabeled.
 
-Record every decision, merges and keep-separates alike, in a `resolved_duplicates` array in `output/new_terms.json` (one entry per pair): `term_a`, `term_b`, `original_reason` (the one-line flag reason), `decision` (`"merged"` or `"kept_separate"`), `canonical_term` (merges only), `decided_by`, `decided_at`.
+Record every decision, merges and keep-separates alike, in a `resolved_duplicates` array in `pathwise_output/new_terms.json` (one entry per pair): `term_a`, `term_b`, `original_reason` (the one-line flag reason), `decision` (`"merged"` or `"kept_separate"`), `canonical_term` (merges only), `decided_by`, `decided_at`.
 
 - `decided_by`: ask the user once, at the first decision, for the name to record, and reuse it for the rest of the session. Don't infer it from the environment or guess.
 - `decided_at`: the date of the decision, ISO 8601 (`YYYY-MM-DD`), taken from the current date the session reports, not estimated. The lockdown workspace blocks shell commands, so there's no system clock to read a time from; record the date only.
 - A `kept_separate` entry is logged exactly like a merge. It documents that a person reviewed the pair and chose not to merge it.
 - Before applying a merge, check every per-article file for a relationship that connects the two terms, either directly (one as source, the other as target) or through a chain of other key events. If there is one, tell the user which article and which relationship or chain it is, explain that merging would turn it into a loop (a term leading to itself), and ask whether to merge anyway or keep the pair separate. Don't remove the relationship on your own. Relationships to *other* key events need no check: they point at key events by internal id, so they follow the relabeled term automatically.
-- On a merge, relabel the non-canonical term to the canonical one in every per-article pathway file in `output/` where it appears (`biological_entity_id` for entity terms, the `relationship` array for relationship types, in whichever position the term appears; the array always keeps exactly two entries, so if it then lists the same term twice, that's fine and both stay). Do not touch `evidence`, `additional_evidence`, `reference_ids`, the `references` list, or any other field. The supporting quotes stay exactly as extracted and attributed to their own article. Mark the non-canonical entry in `new_terms.json` with `"status": "merged_into"` and `"merged_into": "<canonical>"`; don't delete it. Point any other entry's `possible_duplicate_of` that named the merged-away term at the canonical term instead. The `resolved_duplicates` and `resolved_relationship_disagreements` records are history, so they keep the names exactly as they were when the decision was made.
+- On a merge, relabel the non-canonical term to the canonical one in every per-article pathway file in `pathwise_output/` where it appears (`biological_entity_id` for entity terms, the `relationship` array for relationship types, in whichever position the term appears; the array always keeps exactly two entries, so if it then lists the same term twice, that's fine and both stay). Do not touch `evidence`, `additional_evidence`, `reference_ids`, the `references` list, or any other field. The supporting quotes stay exactly as extracted and attributed to their own article. Mark the non-canonical entry in `new_terms.json` with `"status": "merged_into"` and `"merged_into": "<canonical>"`; don't delete it. Point any other entry's `possible_duplicate_of` that named the merged-away term at the canonical term instead. The `resolved_duplicates` and `resolved_relationship_disagreements` records are history, so they keep the names exactly as they were when the decision was made.
+- After each decision on a disputed pair, update `clusters.json`: add `"resolution": "merged"` or `"kept_separate"` to that entry in `disputed_pairs`, and on a merge, add the term to the matching cluster in `key_event_clusters` (or start a new cluster). Leave `clustering/agreement.json` unchanged; it records what the two agents did, not what was decided later.
 - When anything was merged, regenerate `merged_tally.json` only, by re-running the merge in Step 7 (`new_terms.json` is left alone), so the tally reflects the standardized labels.
 
 ### 8c. Relationship-disagreement review (interactive)
@@ -321,28 +495,48 @@ After the duplicate review (whether or not the user went through it), if `merged
 - If the user says **same**, ask which pair to keep. Then, in each article that used one of the other pairs, change the `relationship` array on that one relationship (the one between those two key events) to the kept pair. Change nothing else: not other relationships that use the same verbs, and not `evidence`, `additional_evidence`, `reference_ids`, `quality`, or the `references` list. Use the same backup and targeted-replacement rules as 8b.
 - If the user says **different**, change nothing in the article files.
 
-Record every decision, same and different alike, in a `resolved_relationship_disagreements` array in `output/new_terms.json`: `source` and `target` (the two key events), `pairs` (each pair as it was, with the articles that used it), `decision` (`"same_meaning"` or `"different"`), `kept_relationship` (same-meaning decisions only), `decided_by`, `decided_at` (same rules as 8b). A `"different"` entry matters as much as a same-meaning one: it records that a person looked at the disagreement and confirmed it.
+Record every decision, same and different alike, in a `resolved_relationship_disagreements` array in `pathwise_output/new_terms.json`: `source` and `target` (the two key events), `pairs` (each pair as it was, with the articles that used it), `decision` (`"same_meaning"` or `"different"`), `kept_relationship` (same-meaning decisions only), `decided_by`, `decided_at` (same rules as 8b). A `"different"` entry matters as much as a same-meaning one: it records that a person looked at the disagreement and confirmed it.
 
 When anything was changed, regenerate `merged_tally.json` only, as in 8b, so the combined relationship counts its articles together and the flag goes away.
 
-After the relationship-disagreement review (whether or not the user went through it), the run is done. There is no check against outside ontologies: new terms stay exactly as minted from the articles, in `new_terms.json`, for a human to review and add to the PathWise ontology.
+### 8d. Cluster review (interactive)
+
+After the relationship-disagreement review (whether or not the user went through it), if Step 6 made any clusters, ask: "Would you like to review the clusters that were merged automatically?" If there were none, skip this step without asking.
+
+- **No**: the run is done. The clusters stay as they are, and `clusters.json` keeps the full record for later.
+- **Yes**: show a compact list of every key-event cluster, one line each: the main term, then the other members, with the number of articles for each (e.g. "glutathione_depletion ← gsh_depletion (1 article), gsh_loss (1 article)"). Mark any cluster with `main_term_tie: true`. Then list the relationship merges the same way. Ask which ones the user wants to change. Don't step through every cluster one at a time unless the user asks to.
+
+For each cluster the user picks, offer:
+- **Split**: move one or more members out of the cluster. Each one goes back to its own name in the per-article files that used it.
+- **Change the main term**: pick another member as the main term. If a member is already in the ontology file, it must stay the main term, because the ontology file is never relabeled.
+- **Undo a relationship merge**: put an article's original tag pair back on that relationship.
+
+Apply each change with the same backup, targeted-replacement and loop-check rules as 8b. The original names are in `pre_relabel_backup/`. Update `clusters.json` and `new_terms.json` (`merged_into`, `synonyms`) to match, and record every change in a `resolved_clusters` array in `new_terms.json`: `cluster_main_term` (as it was), `change` (`"split"`, `"changed_main_term"`, or `"undid_relationship_merge"`), `details` (which terms or tag pairs moved, and the new main term), `decided_by`, `decided_at` (same rules as 8b). Then regenerate `merged_tally.json` only, as in 8b.
+
+The run is then done. There is no check against outside ontologies: new terms stay exactly as minted from the articles (and merged in Step 6), in `new_terms.json`, for a human to review and add to the PathWise ontology.
 
 ### What relabeling may and may not do
 
-Relabeling changes only the term label a key event or relationship is filed under (or, in 8c, the tag pair on one relationship). It never adds, removes, or reconnects key events or relationships, and never touches `evidence`, `additional_evidence`, `reference_ids`, or the `references` list. It can still have a consequence: if two nodes in one article end up with the same label after a merge or adoption, both nodes stay in that article's file, and Step 7 counts the article once for that term (`article_count` counts distinct articles). Say so if it happens, so the user can look at that article's file.
+This applies to every relabel, in Step 6 and in Step 8 alike. Relabeling changes only the term label a key event or relationship is filed under (or, in 6d, 8c and 8d, the tag pair on one relationship). It never adds, removes, or reconnects key events or relationships, and never touches `evidence`, `additional_evidence`, `reference_ids`, or the `references` list. It can still have a consequence: if two nodes in one article end up with the same label after a merge or adoption, both nodes stay in that article's file, and Step 7 counts the article once for that term (`article_count` counts distinct articles). Say so if it happens, so the user can look at that article's file.
 
 ## What each output file is, in plain language
 
-A run leaves several files in `output/`. Their names don't say much on their own — make sure the user handing this off knows what's in each one and what they'd actually use it for.
+A run leaves several files in `pathwise_output/`. Their names don't say much on their own — make sure the user handing this off knows what's in each one and what they'd actually use it for.
 
 **`<aop_id>.json`** (one per article, e.g. `cyp2e1@hepatocyte_necrosis_smith_2019.json`)
-The single-article extraction: this article's key events, its key event relationships, its own bibliographic details, and a short list of just the sources actually cited inside that evidence (not the article's full bibliography — see Step 3B), each one assigned a `ref_id`. Every key event and relationship carries `reference_ids` naming the specific `ref_id`(s) that back each of its quotes (Step 3C) — so a claim can be traced to its exact citation, not just "somewhere in this article's bibliography." That reference list sits at the end of the file, after the pathway content, so opening the file shows the actual extraction first. Written the moment that article finishes, so if the run stops partway through, whichever of these already exist are complete and safe to use — nothing partial. Open one of these to sanity-check that a specific article was read correctly, independent of anything else in the batch.
+The single-article extraction: this article's key events, its key event relationships, its own bibliographic details, and a short list of just the sources actually cited inside that evidence (not the article's full bibliography — see Step 3B), each one assigned a `ref_id`. Every key event and relationship carries `reference_ids` naming the specific `ref_id`(s) that back each of its quotes (Step 3C) — so a claim can be traced to its exact citation, not just "somewhere in this article's bibliography." That reference list sits at the end of the file, after the pathway content, so opening the file shows the actual extraction first. Written the moment that article finishes, so if the run stops partway through, whichever of these already exist are complete and safe to use — nothing partial. Open one of these to sanity-check that a specific article was read correctly, independent of anything else in the batch. Each article was extracted by its own helper agent that never saw the other articles. Step 6 may since have relabeled terms in it; the file exactly as its agent returned it is in `pre_relabel_backup/`.
 
 **`run_log.md`**
-A one-line-per-article log: which articles were processed, which were processed as borderline on-topic (with the reason), which were excluded as off-topic (Step 1b, with the reason), which yielded no TOPIC-relevant content, which failed to open or had no readable text, how many pages were read. First stop if something seems off — e.g. if an article expected to contribute is missing from the tally, this file says whether it was excluded, came up empty, or failed outright, rather than just contributing nothing with no explanation.
+Starts with whether the lockdown was on, the run status (`in progress` or `complete`), and the run's inputs. Then a one-line-per-article log: which articles were processed, which were processed as borderline on-topic (with the reason), which were excluded as off-topic (Step 1b, with the reason), which yielded no TOPIC-relevant content, which failed to open or had no readable text, how many pages were read. First stop if something seems off — e.g. if an article expected to contribute is missing from the tally, this file says whether it was excluded, came up empty, or failed outright, rather than just contributing nothing with no explanation.
 
 **`new_terms.json`**
-Every term (biological entity or relationship type) that didn't already exist in the ontology file and had to be minted during this run, plus which article(s) prompted it. Review this before adding anything permanently to the ontology — these are new, unreviewed additions. Anything carrying `possible_duplicate_of` is a term the run wasn't confident was new — a prompt for a human to decide whether it should actually merge into the existing term it resembles. If the user went through the end-of-run reviews (Step 8), this file also holds the record of those decisions: `resolved_duplicates` (each pair, the original reason, merged or kept separate, which term was kept, who decided, when), `resolved_relationship_disagreements` (each disagreement, same meaning or different, which tag pair was kept, who decided, when). Merged-away terms stay in the file, marked `merged_into`, so the full history is recoverable.
+Every term (biological entity or relationship type) that didn't already exist in the ontology file and had to be minted during this run, plus which article(s) prompted it. Review this before adding anything permanently to the ontology — these are new, unreviewed additions. Anything carrying `possible_duplicate_of` is a term the run wasn't confident was new — a prompt for a human to decide whether it should actually merge into the existing term it resembles. If the user went through the end-of-run reviews (Step 8), this file also holds the record of those decisions: `resolved_duplicates` (each pair, the original reason, merged or kept separate, which term was kept, who decided, when), `resolved_relationship_disagreements` (each disagreement, same meaning or different, which tag pair was kept, who decided, when), and `resolved_clusters` (each change made to an automatic cluster in 8d, who decided, when). Merged-away terms stay in the file, marked `merged_into` (and `merged_by: "clustering"` when Step 6 merged them), and each main term lists its `synonyms`, so the full history is recoverable. The `new_terms/` folder keeps each article's own list of new terms, exactly as its agent returned it.
+
+**`clusters.json`**
+The synonym record from Step 6: every key-event cluster (the main term, why it was chosen, and every term merged into it, with the articles that used each), every relationship merge, and the disputed pairs that weren't merged because only one clustering agent proposed them. This is where to look to see which terms were treated as the same, and why. It's also what the cluster review in 8d works from.
+
+**`clustering/agreement.json`** and the agents' raw answers in `clustering/`
+How much the two clustering agents agreed, for key events and for relationships separately: the pairs both proposed, the pairs only one proposed, and the agreement percentage, with the full lists so the numbers can be recounted. The four raw answer files are exactly what each clustering agent returned.
 
 **`merged_tally.json`**
 The actual deliverable. Every key event and relationship, merged across all articles that mention it, with two separate counts: `article_count` (how many articles support it) and `distinct_sources_cited` (how many distinct primary references those articles cite as evidence, deduplicated across the whole batch). A key event backed by 3 of 4 articles is a stronger claim than one backed by 1 — and one backed by 3 articles that each cite a different primary source is stronger still than one backed by 3 articles all citing the same source. This file is what makes both of those visible, which no single article's file can show on its own. In Full mode, entries also carry `layers` and `layer_details` wherever an article stated a species/circumstance qualifier, a confounder, or a developmental window.
@@ -359,8 +553,8 @@ Calls out two articles that connect the same two key events but don't use exactl
 **`single_citation_flags`** (an array inside `merged_tally.json`, not its own file)
 Calls out key events or relationships backed by more than one article but only one distinct primary source between them — several reviews citing the same underlying study isn't the same as independent corroboration, and this is where that distinction becomes visible instead of getting flattened into a reassuring-looking article count.
 
-**Relabeled files (only if the user merged terms or combined relationships in Step 8)**
-Merging a duplicate or combining a relationship disagreement changes the label inside the per-article files and regenerates `merged_tally.json`. Quotes and references are never changed, and `new_terms.json` keeps the original names and tags, reasons, who decided, and when. A copy of the per-article files from before the first relabel is kept in `output/pre_relabel_backup/`.
+**Relabeled files**
+Step 6's clustering, and any merge, combined relationship, or cluster change in Step 8, changes the labels inside the per-article files and regenerates `merged_tally.json`. Quotes and references are never changed, and `clusters.json` and `new_terms.json` keep the original names and tags, reasons, who decided, and when. The per-article files exactly as their agents returned them are kept in `pathwise_output/pre_relabel_backup/`.
 
 ## Reference pathway example
 

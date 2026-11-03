@@ -1,0 +1,1 @@
+PathWise isolation check. If a helper agent can read this file, isolation is broken and the run must not start. Don't edit, move or delete this file.

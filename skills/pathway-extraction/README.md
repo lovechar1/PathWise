@@ -10,10 +10,12 @@ The skill only runs inside the **lockdown workspace**, a ready-made folder in th
 
 You don't have to set anything up. The settings come with the folder. If you run the skill anywhere else, it checks for the lockdown, stops, and tells you how to fix it.
 
+**On Windows, you need Git for Windows installed** (free, from git-scm.com). The lockdown uses it to keep the helper agents apart (see "How a run works"). Most people who use Claude Code on Windows already have it. If it's missing, the skill tells you at the start and won't run.
+
 1. **Download the repository.** On the PathWise GitHub page, click the green **Code** button, then **Download ZIP**. Unzip it somewhere easy to find, like your Desktop.
 2. **Open the workspace folder in Claude Code.** Open the `pathway-extraction-workspace` folder that's inside the unzipped folder. In the Claude desktop app, choose that folder when you start a new Code session. In a terminal, go to that folder and run `claude`. Open the workspace folder itself, not the PathWise folder around it, or the lockdown won't apply.
 3. **Put your PDFs in the `papers` folder** inside the workspace. If you have an ontology file to reuse, put it in the workspace folder too. The skill can't read files anywhere else.
-4. **Start a new chat and ask for the pathway**, for example "Extract the pathway for acetaminophen-induced hepatotoxicity from the PDFs in papers." The first thing the skill does is confirm the lockdown is on, and it writes that into `output/run_log.md`.
+4. **Start a new chat and ask for the pathway**, for example "Extract the pathway for acetaminophen-induced hepatotoxicity from the PDFs in papers." The first thing the skill does is confirm the lockdown is on, and it writes that into `pathwise_output/run_log.md`.
 
 Don't copy the skill into your own Claude skills folder (`~/.claude/skills`). From there it could run outside the lockdown. Always use it from the workspace.
 
@@ -23,7 +25,8 @@ Don't copy the skill into your own Claude skills folder (`~/.claude/skills`). Fr
 |---|---|
 | Reading and writing files in the workspace folder | Web search, web pages, and both browsers (the built-in one and Claude in Chrome) |
 | The skill itself, in `.claude/skills/pathway-extraction` | Shell commands (Bash and PowerShell) |
-| Helper agents, which follow the same rules | Past chats, saved memory, and old transcripts |
+| Helper agents, which follow the same rules and can only read files | Past chats, saved memory, and old transcripts |
+| | Helper agents seeing the run's results, including each other's |
 | | claude.ai connectors and plugin search |
 | | Every folder outside the workspace |
 
@@ -52,17 +55,26 @@ Extract the pathway for acetaminophen-induced hepatotoxicity from the PDFs in pa
 using pathwise_ontology.json.
 ```
 
-Articles are processed one at a time in a single conversation. A run can't be split across sessions, because later articles need to see the terms earlier ones introduced.
+## How a run works
+
+1. **Each paper is read on its own.** The skill gives every paper to its own helper agent, a fresh copy of Claude with identical instructions. Several run at the same time, in batches if there are many papers. Each agent sees only its own PDF, the skill, and your ontology file. It can't see the other papers or what the other agents found, and the lockdown enforces that, so the order papers run in can't change the results.
+2. **Results are saved as each paper finishes.** If a run stops partway, start a new chat in the workspace and ask again. The skill offers to resume, and only redoes the papers that didn't finish.
+3. **Matching terms are merged.** Different papers often use different names for the same thing, like "GSH depletion" and "glutathione depletion". Once every paper is done, terms with the same ontology ID are merged first. Then two separate clustering agents each group the remaining terms that mean the same thing, without seeing each other's answer. Terms both agents group together are merged automatically, and terms only one agent grouped are left for you to decide. Key events are done first, then relationships.
+4. **The pathway is built** from the merged terms, and every cluster, every main-term choice, and how much the two clustering agents agreed are saved so you can check them afterwards.
+
+The rules for deciding when two terms mean the same thing, and which name a cluster keeps, are provisional. They'll be replaced by the PathWise ontology rules once those are agreed.
 
 ## What you get back
 
-Everything is written to an `output/` folder:
+Everything is written to a `pathwise_output/` folder in the workspace:
 
 | File | What it is |
 |---|---|
 | `<aop_id>.json` | One per article, named like `cyp2e1@hepatocyte_necrosis_smith_2019.json` (initiating event, `@`, adverse outcome, then the article's name). Its key events and relationships, each with the quotes that support it and the citations attached to each quote, plus the list of sources it cites. |
 | `run_log.md` | First, whether the lockdown was on for this run. Then one line per article: processed, excluded as off-topic, borderline, or failed to read, with the reason and pages read. Check here first if an article seems to be missing. |
-| `new_terms.json` | Every new ontology term minted this run, for your review. Nothing is added to your ontology automatically. If you do the end-of-run reviews, it also records each decision (merged, kept separate, or same or different relationship), the reason, who decided, and when. |
+| `new_terms.json` | Every new ontology term minted this run, for your review, with the synonyms merged into each one. Nothing is added to your ontology automatically. If you do the end-of-run reviews, it also records each decision (merged, kept separate, same or different relationship, or a change to a cluster), the reason, who decided, and when. |
+| `clusters.json` | The synonym list: which terms were merged as the same thing, the name each cluster kept and why, and the pairs left for you to decide. |
+| `clustering/agreement.json` | How much the two clustering agents agreed, for key events and relationships separately, with the full list of term pairs behind each number so you can recount them. The folder also holds each agent's raw answer. |
 | `merged_tally.json` | The main result. Every key event and relationship merged across articles, with `article_count` (how many articles support it) and `distinct_sources_cited` (how many different papers those articles cite for it). It also holds the flag lists described below. In Full mode it carries the extra detail too. |
 
 The flag lists inside `merged_tally.json` are places to look at, not verdicts:
@@ -76,7 +88,7 @@ The flag lists inside `merged_tally.json` are places to look at, not verdicts:
 
 Each relationship has exactly two tags, separated by a comma. The first says what happens to the first event, and the second says what that does to the second event, for example `["oxidizes_to", "formed_from"]`. The tags follow the article's own wording as closely as possible. If a relationship reads the same from both sides, or the article only describes one side, the word is repeated, for example `["binds_to", "binds_to"]`.
 
-Once an earlier article has set the tags for a relationship, later articles describing the same thing reuse them. Two articles only count toward the same relationship when both tags match exactly, in the same order.
+Each paper picks its own tags, so two papers may word the same relationship differently. After every paper is done, the clustering agents decide which tag pairs mean the same thing, and those are merged. Two articles only count toward the same relationship when both tags match exactly, in the same order, after that.
 
 The two tags can point in different directions. `["activates", "inhibits"]` means the first event is activated, and that inhibits the second. If one article says A activates B and another says A inhibits B, that leads to a different outcome, so it is a different pathway. The skill keeps them as separate relationships and flags them.
 
@@ -84,7 +96,12 @@ The two tags can point in different directions. `["activates", "inhibits"]` mean
 
 While it runs, Claude tells you right away if an article fails to open, is excluded as off-topic, is borderline on-topic, or yields no key events, and gives a reason each time.
 
-When it finishes, it prints a summary: key event and relationship totals, which articles were flagged and why, and the possible duplicate term pairs by name. It then offers two optional reviews. The first steps through the possible duplicates one at a time. The second steps through relationship disagreements, where you mark each one as the same meaning (so the articles count together) or different (kept apart). Each decision is saved with the date. It doesn't interpret the biology. That part is up to you.
+When it finishes, it prints a summary: key event and relationship totals, which articles were flagged and why, how many clusters were merged and how much the two clustering agents agreed, and the possible duplicate term pairs by name. It then offers three optional reviews:
+1. **Possible duplicates**, one at a time, including the pairs only one clustering agent grouped. You choose merged or kept separate.
+2. **Relationship disagreements**, where you mark each one as the same meaning (so the articles count together) or different (kept apart).
+3. **The automatic clusters.** You see every cluster as a short list and pick any you want to change: split one apart, or change which name it keeps.
+
+Each decision is saved with the date. It doesn't interpret the biology. That part is up to you.
 
 ## Scope
 
@@ -101,7 +118,9 @@ When it finishes, it prints a summary: key event and relationship totals, which 
 - Claude Code's sandbox, which could let commands run with no internet, doesn't work on Windows yet. So the lockdown blocks commands completely instead.
 - The lockdown blocks the claude.ai Docs connector by its ID on the account it was tested with. If your account shows that connector under a different name, it may not be blocked. All other claude.ai connectors are switched off by a general setting.
 - Choosing Simplified mode means any extra detail (species, confounders, special circumstances) can only be added later by running the batch again.
-- None of the recent changes have been run on a real batch of PDFs yet.
+- The clustering agreement numbers are counted by Claude, not calculated by code, because commands are blocked. That's why the full pair lists are saved with them, so they can be checked.
+- The rules for when two terms are the same, and for which name a cluster keeps, are provisional until the PathWise ontology rules are agreed.
+- The parallel extraction and clustering haven't been run on a real batch of PDFs yet.
 
 ## Future directions
 
