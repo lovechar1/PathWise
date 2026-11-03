@@ -1,0 +1,44 @@
+{
+  "pathwiseLockdown": "1.4.0",
+  "autoMemoryEnabled": false,
+  "enableArtifact": false,
+  "disableClaudeAiConnectors": true,
+
+  "permissions": {
+    "blockReadsOutsideWorkingDirectories": true,
+    "deny": [
+      "WebSearch",
+      "WebFetch",
+      "Bash",
+      "PowerShell",
+      "mcp__Claude_Browser",
+      "mcp__claude-in-chrome",
+      "mcp__1a59c906-04da-521d-bda7-7f71b9f9e01c",
+      "mcp__mcp-registry",
+      "mcp__ccd_session_mgmt",
+      "mcp__ccd_session",
+      "mcp__ccd_directory",
+      "mcp__ccd_host",
+      "mcp__terminal",
+      "mcp__scheduled-tasks",
+      "SendMessage",
+      "ListAgents",
+      "RemoteTrigger",
+      "SearchPlugins",
+      "SuggestPluginInstall",
+      "SuggestSkills",
+      "ShareOnboardingGuide",
+      "DesignSync",
+      "Read(~/AppData/Local/Claude-Data/**)"
+    ]
+  },
+
+  "sandbox": {
+    "enabled": true,
+    "failIfUnavailable": false,
+    "allowUnsandboxedCommands": false,
+    "network": {
+      "allowedDomains": []
+    }
+  }
+}

@@ -1,0 +1,4 @@
+# Your PDFs and results stay on your computer, not in the repository.
+papers/*
+!papers/.gitkeep
+output*/

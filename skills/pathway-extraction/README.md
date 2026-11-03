@@ -2,7 +2,32 @@
 
 A Claude Code skill that pulls a biological pathway out of a batch of PDF articles: molecular initiating events, key events, key event relationships, and adverse outcomes. Everything it records comes from what each article's own text and figures say.
 
-During extraction it uses the papers and nothing else. It doesn't fill gaps with general biology knowledge and it doesn't look anything up, so it can find pathways that are new or that branch differently from what's already registered elsewhere. Outside ontologies are only used in an optional check at the end of a run, and only to match term names.
+During extraction it uses the papers and nothing else. It doesn't fill gaps with general biology knowledge and it doesn't look anything up, so it can find pathways that are new or that branch differently from what's already registered elsewhere. It never checks outside ontologies either. New terms are minted from the articles and kept for you to review.
+
+## Start here: run it in the lockdown workspace
+
+The skill only runs inside the **lockdown workspace**, a ready-made folder in this repository called `pathway-extraction-workspace`. That folder's settings stop Claude from using anything except your PDFs. It can't use the internet, run commands, see your past chats or saved memory, or open any folder outside the workspace. That's how you know the pathway came from the papers and nothing else.
+
+You don't have to set anything up. The settings come with the folder. If you run the skill anywhere else, it checks for the lockdown, stops, and tells you how to fix it.
+
+1. **Download the repository.** On the PathWise GitHub page, click the green **Code** button, then **Download ZIP**. Unzip it somewhere easy to find, like your Desktop.
+2. **Open the workspace folder in Claude Code.** Open the `pathway-extraction-workspace` folder that's inside the unzipped folder. In the Claude desktop app, choose that folder when you start a new Code session. In a terminal, go to that folder and run `claude`. Open the workspace folder itself, not the PathWise folder around it, or the lockdown won't apply.
+3. **Put your PDFs in the `papers` folder** inside the workspace. If you have an ontology file to reuse, put it in the workspace folder too. The skill can't read files anywhere else.
+4. **Start a new chat and ask for the pathway**, for example "Extract the pathway for acetaminophen-induced hepatotoxicity from the PDFs in papers." The first thing the skill does is confirm the lockdown is on, and it writes that into `output/run_log.md`.
+
+Don't copy the skill into your own Claude skills folder (`~/.claude/skills`). From there it could run outside the lockdown. Always use it from the workspace.
+
+### What the lockdown allows and blocks
+
+| Allowed | Blocked |
+|---|---|
+| Reading and writing files in the workspace folder | Web search, web pages, and both browsers (the built-in one and Claude in Chrome) |
+| The skill itself, in `.claude/skills/pathway-extraction` | Shell commands (Bash and PowerShell) |
+| Helper agents, which follow the same rules | Past chats, saved memory, and old transcripts |
+| | claude.ai connectors and plugin search |
+| | Every folder outside the workspace |
+
+The settings live in `pathway-extraction-workspace/.claude/settings.json`. Don't edit or delete that file. If it's missing or changed, the skill won't run.
 
 ## What you need before running it
 
@@ -13,17 +38,17 @@ During extraction it uses the papers and nothing else. It doesn't fill gaps with
   You can't switch partway through. If you pick Simplified and later want the extra details, the whole batch has to be run again.
 - **A topic.** The mechanism or subject to extract, for example "Acetaminophen-Induced Hepatotoxicity."
 - **A topic description** (optional, recommended). One to three sentences narrowing the topic: direction of causation, organ, exposure type. Don't describe pathway steps here, only what counts as in scope.
-- **A folder of PDFs.** Every article you want processed, with nothing else in the folder. An ordered list of file paths also works.
-- **An ontology file** (optional). A `pathwise_ontology.json` reference dictionary of terms to reuse across runs. If you have one from an earlier run, point to it so terminology stays consistent. If you don't have one, the run starts empty and lists every term it needs in `new_terms.json`. The skill never creates or changes an ontology file itself.
+- **A folder of PDFs.** Every article you want processed, with nothing else in the folder. Use the workspace's `papers` folder. An ordered list of file paths inside the workspace also works.
+- **An ontology file** (optional). A `pathwise_ontology.json` reference dictionary of terms to reuse across runs. If you have one from an earlier run, put it in the workspace folder and point to it so terminology stays consistent. If you don't have one, the run starts empty and lists every term it needs in `new_terms.json`. The skill never creates or changes an ontology file itself.
 
 You don't need to prepare any of this in a special format. Tell Claude Code what you want extracted and where the PDFs are, and it will ask for whatever is missing.
 
 ## How to run it
 
-In a Claude Code session, ask in plain language:
+In a Claude Code session opened on the lockdown workspace (see "Start here"), ask in plain language:
 
 ```
-Extract the pathway for acetaminophen-induced hepatotoxicity from the PDFs in ./articles,
+Extract the pathway for acetaminophen-induced hepatotoxicity from the PDFs in papers,
 using pathwise_ontology.json.
 ```
 
@@ -36,8 +61,8 @@ Everything is written to an `output/` folder:
 | File | What it is |
 |---|---|
 | `<aop_id>.json` | One per article, named like `cyp2e1@hepatocyte_necrosis_smith_2019.json` (initiating event, `@`, adverse outcome, then the article's name). Its key events and relationships, each with the quotes that support it and the citations attached to each quote, plus the list of sources it cites. |
-| `run_log.md` | One line per article: processed, excluded as off-topic, borderline, or failed to read, with the reason and pages read. Check here first if an article seems to be missing. |
-| `new_terms.json` | Every new ontology term minted this run, for your review. Nothing is added to your ontology automatically. If you do the end-of-run reviews, it also records each decision (merged, kept separate, same or different relationship, or adopted from an ontology), the reason, who decided, and when. |
+| `run_log.md` | First, whether the lockdown was on for this run. Then one line per article: processed, excluded as off-topic, borderline, or failed to read, with the reason and pages read. Check here first if an article seems to be missing. |
+| `new_terms.json` | Every new ontology term minted this run, for your review. Nothing is added to your ontology automatically. If you do the end-of-run reviews, it also records each decision (merged, kept separate, or same or different relationship), the reason, who decided, and when. |
 | `merged_tally.json` | The main result. Every key event and relationship merged across articles, with `article_count` (how many articles support it) and `distinct_sources_cited` (how many different papers those articles cite for it). It also holds the flag lists described below. In Full mode it carries the extra detail too. |
 
 The flag lists inside `merged_tally.json` are places to look at, not verdicts:
@@ -59,7 +84,7 @@ The two tags can point in different directions. `["activates", "inhibits"]` mean
 
 While it runs, Claude tells you right away if an article fails to open, is excluded as off-topic, is borderline on-topic, or yields no key events, and gives a reason each time.
 
-When it finishes, it prints a summary: key event and relationship totals, which articles were flagged and why, and the possible duplicate term pairs by name. It then offers three optional reviews. The first steps through the possible duplicates one at a time. The second steps through relationship disagreements, where you mark each one as the same meaning (so the articles count together) or different (kept apart). The third checks the new terms against existing ontologies, AOP-Wiki first. It also describes BioCarta and the eTRANSAFE Rosetta Stone and asks if you want them, but matching against those two isn't built yet, so it just notes your choice in the run log. It doesn't interpret the biology. That part is up to you.
+When it finishes, it prints a summary: key event and relationship totals, which articles were flagged and why, and the possible duplicate term pairs by name. It then offers two optional reviews. The first steps through the possible duplicates one at a time. The second steps through relationship disagreements, where you mark each one as the same meaning (so the articles count together) or different (kept apart). Each decision is saved with the date. It doesn't interpret the biology. That part is up to you.
 
 ## Scope
 
@@ -72,7 +97,9 @@ When it finishes, it prints a summary: key event and relationship totals, which 
 ## Known limitations
 
 - The reviewer name saved with each review decision is just a name typed in at the start of the review. It isn't verified.
-- The AOP-Wiki lookup uses its public SPARQL endpoint, which was reachable and returned results when tested, but the full review flow hasn't been run. The BioCarta and Rosetta Stone checks haven't been built or tested yet.
+- Review decisions are saved with the date only, not the time. The lockdown blocks commands, so there's no clock to read a time from.
+- Claude Code's sandbox, which could let commands run with no internet, doesn't work on Windows yet. So the lockdown blocks commands completely instead.
+- The lockdown blocks the claude.ai Docs connector by its ID on the account it was tested with. If your account shows that connector under a different name, it may not be blocked. All other claude.ai connectors are switched off by a general setting.
 - Choosing Simplified mode means any extra detail (species, confounders, special circumstances) can only be added later by running the batch again.
 - None of the recent changes have been run on a real batch of PDFs yet.
 
@@ -83,7 +110,6 @@ When it finishes, it prints a summary: key event and relationship totals, which 
 - **Scoring review article quality.** Rate each review with checklists such as AMSTAR, PRISMA, or SANRA, depending on the article type. The result could be an overall score or a short written assessment.
 - **Improving the evidence behind each step.** The quality fields mostly come back "unknown," because reviews rarely describe the tests behind a claim. Contributors with access to the cited studies could fill these in later, and the criteria will be refined over time.
 - **A new pathway naming convention.** Pathways are named after the initiating event and the adverse outcome. This is expected to change so the name no longer uses the adverse outcome.
-- **BioCarta and Rosetta Stone matching.** The end-of-run ontology check describes these two resources but can't match against them yet.
 - **Visualizing the extra detail in RiskLytx.** Show the Full-mode layers (species differences, confounders, developmental windows) so they can be turned on and off. Also show the evidence behind each key event and relationship: the quality fields, the supporting quotes, and how many articles and cited papers back it.
 
 ## Full details
