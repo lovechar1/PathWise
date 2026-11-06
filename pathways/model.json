@@ -39,6 +39,9 @@
       "target": "KE:2",
       "relationship": [
         "increases", "inhibits"
+      ],
+      "references": [
+        1
       ]
     },
     {
@@ -47,6 +50,9 @@
       "target": "KE:3",
       "relationship": [
         "inhibits", "increases"
+      ],
+      "references": [
+        1, 2, 3
       ]
     },
     {
@@ -55,6 +61,9 @@
       "target": "KE:4",
       "relationship": [
         "increases", "decreases"
+      ],
+      "references": [
+        1, 2, 3
       ]
     },
     {
@@ -63,6 +72,9 @@
         "target": "KE:5",
         "relationship": [
           "decreases", "causes"
+        ],
+        "references": [
+          3
         ]
     }
   ],

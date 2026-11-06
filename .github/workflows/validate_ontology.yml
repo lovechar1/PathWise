@@ -1,12 +1,16 @@
-name: Validate Ontology JSON
+name: Validate ontology
 
 on:
   pull_request:
     paths:
-      - './ontology/pathwise-ontology.json'
-      - './ontology/schema.json'
-      - './ontology/validate.py'
-      - '.github/workflows/validate-ontology.yml'
+      - 'pathways/**/*.json'
+      - 'pathwise_ontology.json'
+      - 'schema.json'
+      - 'validate.py'
+      - 'check_unique_ids.py'
+      - 'validate_pathway_ontology.py'
+      - '.github/workflows/validate_ontology.yml'
+  workflow_dispatch:
 
 jobs:
   validate:
@@ -14,6 +18,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -23,5 +29,39 @@ jobs:
       - name: Install dependencies
         run: pip install jsonschema
 
-      - name: Run ontology validator
-        run: python validate.py
+      - name: Validate ontology schema
+        run: |
+          if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]] || \
+             ! git diff --quiet "origin/${{ github.base_ref }}...HEAD" -- pathwise_ontology.json schema.json; then
+            python validate.py
+          else
+            echo "Ontology and schema are unchanged; skipping schema validation."
+          fi
+
+      - name: Check ontology IDs are unique
+        run: |
+          if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]] || \
+             ! git diff --quiet "origin/${{ github.base_ref }}...HEAD" -- pathwise_ontology.json; then
+            python check_unique_ids.py pathwise_ontology.json
+          else
+            echo "Ontology is unchanged; skipping duplicate-ID validation."
+          fi
+
+      - name: Test pathway reference validator
+        run: python -m unittest -v test_validate_pathway_ontology.py
+
+      - name: Validate pathway ontology references
+        if: github.event_name == 'pull_request'
+        run: python validate_pathway_ontology.py --changed-from "origin/${{ github.base_ref }}"
+
+      - name: Validate all pathway ontology references
+        if: github.event_name == 'workflow_dispatch'
+        run: python validate_pathway_ontology.py
+
+      - name: Upload missing-entry report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: missing-ontology-entries
+          path: missing_ontology_entries.md
+          if-no-files-found: ignore
