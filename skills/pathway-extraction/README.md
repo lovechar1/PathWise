@@ -75,14 +75,20 @@ Everything is written to a `pathwise_output/` folder in the workspace:
 | `new_terms.json` | Every new ontology term minted this run, for your review, with the synonyms merged into each one. Nothing is added to your ontology automatically. If you do the end-of-run reviews, it also records each decision (merged, kept separate, same or different relationship, or a change to a cluster), the reason, who decided, and when. |
 | `clusters.json` | The synonym list: which terms were merged as the same thing, the name each cluster kept and why, and the pairs left for you to decide. |
 | `clustering/agreement.json` | How much the two clustering agents agreed, for key events and relationships separately, with the full list of term pairs behind each number so you can recount them. The folder also holds each agent's raw answer. |
-| `merged_tally.json` | The main result. Every key event and relationship merged across articles, with `article_count` (how many articles support it) and `distinct_sources_cited` (how many different papers those articles cite for it). It also holds the flag lists described below. In Full mode it carries the extra detail too. |
+| `merged_tally.json` | The main result. Every key event and relationship merged across articles, with its `synonyms` (the other names articles used for it), `article_count` (how many articles support it) and `distinct_sources_cited` (how many different papers those articles cite for it). It also holds the flag lists described below. In Full mode it carries the extra detail too. |
 
 The flag lists inside `merged_tally.json` are places to look at, not verdicts:
 
 - `single_source_flags`: supported by only one article, in an area other articles also cover.
 - `single_citation_flags`: supported by several articles that all cite the same one paper.
 - `relationship_disagreement_flags`: two articles connect the same two key events but don't use exactly the same pair of tags (for example "activates" and "inhibits"). This can be a real disagreement or just different wording. You can sort these out in the end-of-run review.
+- `unspecified_terms`: key events ending in `_unspecified` (for example `uptake_unspecified`), where the paper never said which site, enzyme, cell type or substrate. They're kept, and listed so you can see where the literature was vague.
+- `feedback_loops`: each loop papers described, how many papers describe it, and whether they say it amplifies or dampens. Papers can disagree on that, and both answers are kept.
 - `ambiguous_source_matches`: cited papers the skill had to match by author and year, or likely the same paper with different years, so you can confirm them.
+
+## How key events are named
+
+Key events are as specific as each paper is, within reason. If a paper says GSH synthesis fell, the key event is `gsh_synthesis`, and the enzyme too if the paper names it. If it only reports the GSH level or the GSH/GSSG ratio, that's what is recorded, without guessing the cause. The direction of a change usually goes in the relationship ("decreases"), but a direction word stays in the name when it's part of the meaning. A term the paper never pins down is kept with `_unspecified` on the end and listed at the end of the run.
 
 ## How relationships are written
 
@@ -92,11 +98,17 @@ Each paper picks its own tags, so two papers may word the same relationship diff
 
 The two tags can point in different directions. `["activates", "inhibits"]` means the first event is activated, and that inhibits the second. If one article says A activates B and another says A inhibits B, that leads to a different outcome, so it is a different pathway. The skill keeps them as separate relationships and flags them.
 
+## Feedback loops
+
+When a paper describes a loop, such as ROS damaging mitochondria that then make more ROS, each step is drawn as a normal relationship, including the one back to the start. The loop is also named in a `feedback_loops` list, with a quote and whether the paper says it amplifies, dampens, or doesn't say. A loop is only recorded when the paper itself calls it a loop or feedback; arrows that happen to form a circle don't count. `merged_tally.json` counts how many papers describe each loop, and the end-of-run summary lists them.
+
+When merging terms, the skill still refuses to create a loop that no paper described, for example by merging two terms that one paper shows as cause and effect.
+
 ## While it runs and when it finishes
 
 While it runs, Claude tells you right away if an article fails to open, is excluded as off-topic, is borderline on-topic, or yields no key events, and gives a reason each time.
 
-When it finishes, it prints a summary: key event and relationship totals, which articles were flagged and why, how many clusters were merged and how much the two clustering agents agreed, and the possible duplicate term pairs by name. It then offers three optional reviews:
+When it finishes, it prints a summary: key event and relationship totals, which articles were flagged and why, how many clusters were merged and how much the two clustering agents agreed, any feedback loops, any unspecified key events, and the possible duplicate term pairs by name. It then offers three optional reviews:
 1. **Possible duplicates**, one at a time, including the pairs only one clustering agent grouped. You choose merged or kept separate.
 2. **Relationship disagreements**, where you mark each one as the same meaning (so the articles count together) or different (kept apart).
 3. **The automatic clusters.** You see every cluster as a short list and pick any you want to change: split one apart, or change which name it keeps.
