@@ -1,13 +1,13 @@
 ---
 name: reference-check
 version: 1.4.0
-description: Final step of a PathWise pathway-extraction run. Checks the gene and protein names in a finished run's key events against HGNC and UniProt, renames a gene part to its official symbol when there is one clear answer, records HGNC and UniProt ids, and marks the run complete. Use only when the pathway-extraction skill hands over (run status "awaiting reference check") or when the user asks to finish a PathWise run. Never use it for anything else, and never during extraction.
+description: Final step of a PathWise pathway-extraction run. Checks the gene and protein names in a finished run's key events against HGNC and UniProt, finds the official symbol when a paper used an informal name (Claude suggests, the database confirms), renames the gene part to that symbol, records HGNC and UniProt ids, and marks the run complete. Use only when the pathway-extraction skill hands over (run status "awaiting reference check") or when the user asks to finish a PathWise run. Never use it for anything else, and never during extraction.
 compatibility: Runs inside the PathWise lockdown workspace. Needs internet access to rest.genenames.org and rest.uniprot.org (the lockdown allows only name lookups there, only from the main conversation).
 ---
 
 # PathWise reference check
 
-The pathway is already final. This check changes only the gene or protein part of key event names, nothing else, and never adds, removes or reconnects anything. It doesn't use the databases to judge the biology.
+The pathway is already final. This check changes only the gene or protein part of key event names, nothing else, and never adds, removes or reconnects anything. Its job is to make every gene part the official HGNC symbol, including when the papers used an informal name. It doesn't use the databases to judge the biology, and it never changes a gene part's `form` (gene, protein or unspecified), which comes from the papers.
 
 ## 1. Find the run
 
@@ -15,32 +15,51 @@ Use the output folder the extraction skill named. Otherwise look for `pathwise_o
 
 ## 2. List what to look up
 
-Read the run's `merged_tally.json`. For each key event, read its `biological_entity_id` and `gene_parts`.
+Read the run's `merged_tally.json`. For each key event, read its `biological_entity_id` and `gene_parts` (each entry has a `symbol` and a `form`).
 - `gene_parts` is `[]`: no lookup. Record it as `"no_gene"`. This covers events like `liver_weight` and written-out families or complexes.
-- Otherwise look up each gene part once, even if several key events share it (`ppara` in both `ppara` and `ppara_activation`).
+- Otherwise look up each symbol once, even if several key events share it (`ppara` in both `ppara` and `ppara_activation`).
+- An entry that is a plain string instead of `{ "symbol", "form" }` comes from a run made before `form` existed: use the string as the symbol and treat the form as `"unspecified"`.
 
 If a run has no `gene_parts` fields at all (made before this field existed), tell the user that the check can't tell which part of each name is a gene, and stop without changing the status.
 
-## 3. Look up each gene part
+For each symbol, also gather **what the papers meant**, for step 3e and 3f: the term's `label`, `definition` and `synonyms` (from `new_terms.json`, or from the ontology file for an ontology term), and one evidence quote from an article file that uses it.
 
-All lookups use WebFetch with the prompt "Return the response text exactly as received, with no summary or commentary." Use only these addresses; the lockdown refuses anything else. Write symbols in upper case in the address.
+## 3. Find the official symbol for each gene part
 
-1. **Database version, once:** `https://rest.genenames.org/info`. Record `lastModified`.
-2. **HGNC, per gene part:** `https://rest.genenames.org/fetch/symbol/<SYMBOL>`.
-   - `numFound` is 1: the symbol is official. Record `hgnc_id`, the official `symbol` (its capitalization is the label) and `uniprot_ids`.
-   - `numFound` is 0: try `https://rest.genenames.org/search/prev_symbol/<SYMBOL>`, then `https://rest.genenames.org/search/alias_symbol/<SYMBOL>`. Exactly one result: that result's symbol is the official one; fetch it as above. Several results: **unclear**. None: go to UniProt.
-3. **UniProt, in batches of up to 20 symbols** (all the HGNC-confirmed ones, plus any HGNC didn't find):
-   `https://rest.uniprot.org/uniprotkb/search?query=(gene_exact:<A>+OR+gene_exact:<B>)+AND+organism_id:9606+AND+reviewed:true&fields=accession,id,gene_primary,gene_synonym,protein_name&format=tsv`
-   - For a confirmed symbol: find the row whose `Gene Names (primary)` matches it. Record `Entry` as the UniProt accession (for example `P11388`) and `Entry Name` (for example `TOP2A_HUMAN`). The accession goes into the data, never into the name.
-   - For a symbol HGNC didn't find: if exactly one row lists it as a synonym, that row's primary gene name is the official one; fetch it from HGNC as in 2. Otherwise it's **not found**.
+All lookups use WebFetch with the prompt "Return the response text exactly as received, with no summary or commentary." Use only these addresses; the lockdown refuses anything else. Write symbols in upper case in the address, and encode a space as `%20` and a double quote as `%22`.
+
+**a. Database version, once:** `https://rest.genenames.org/info`. Record `lastModified`.
+
+**b. Exact symbol:** `https://rest.genenames.org/fetch/symbol/<SYMBOL>`. `numFound` is 1: the symbol is official (**confirmed**, `found_by: "exact"`). Record `hgnc_id`, the official `symbol` (its capitalization is the label), `name`, `locus_type` and `uniprot_ids`, and go to 3g. Otherwise continue.
+
+**c. Previous and alias symbols:** search `https://rest.genenames.org/search/prev_symbol/<X>` and then `https://rest.genenames.org/search/alias_symbol/<X>`, for the gene part and for each synonym that looks like a symbol (the papers' own spellings such as `PGC-1alpha` or `NR1C1`, with a Greek letter written as its English word). Every symbol these return is a candidate. (Tested: `PGC-1alpha` is an HGNC alias of `PPARGC1A`.)
+
+**d. Name search**, when 3c gave no candidates or more than one:
+- HGNC by name: `https://rest.genenames.org/search/name/%22<written-out name>%22`, using the written-out name from the label or definition (`peroxisome proliferator activated receptor alpha`).
+- UniProt by protein name, for the written-out name and for each synonym: `https://rest.uniprot.org/uniprotkb/search?query=protein_name:%22<name>%22+AND+organism_id:9606+AND+reviewed:true&fields=accession,id,gene_primary,protein_name&format=tsv`.
+
+These searches are loose (a search for "PPAR-alpha" also returns CHD9 and HELZ2, whose long protein names happen to mention it), so every symbol they return is only a candidate.
+
+**e. Suggest.** Add your own suggestion: the official HGNC symbol you believe the papers meant, from the label, synonyms, definition and quote (`pparalpha` or `ppar_alpha` → `PPARA`; `pgc1alpha` → `PPARGC1A`; `hif_1alpha` → `HIF1A`). Using your own knowledge is allowed here, unlike during extraction, because nothing is accepted until the database confirms it in 3f. If you can't tell which gene the papers meant (for example the papers' wording fits several family members), suggest each of them.
+
+**f. Confirm.** Fetch each distinct candidate (at most five) with `https://rest.genenames.org/fetch/symbol/<CANDIDATE>`. A candidate is **confirmed** only when the HGNC record exists and its official `name`, a `prev_name`, a `prev_symbol` or an `alias_symbol` matches what the papers meant. Example: `PPARA` is confirmed for `pparalpha` because its official name is "peroxisome proliferator activated receptor alpha", which is what the papers' "PPARα" stands for; `PPARAL` is not, because it is a different gene. Judge by the names only. For each candidate, write a one-line `match_reason` saying which name matched or why none did.
+- Exactly one confirmed candidate: **rename** to it. Record `found_by` (`"previous_symbol"`, `"alias_symbol"`, `"name_search"` or `"suggested"`, whichever first produced it) and the record's ids as in 3b.
+- Several confirmed: **unclear**, with those candidates.
+- None confirmed: **not found**, with the candidates you tried.
+
+**g. UniProt ids, in batches of up to 20 symbols** (every confirmed or renamed official symbol):
+`https://rest.uniprot.org/uniprotkb/search?query=(gene_exact:<A>+OR+gene_exact:<B>)+AND+organism_id:9606+AND+reviewed:true&fields=accession,id,gene_primary,gene_synonym,protein_name&format=tsv`
+For each, find the row whose `Gene Names (primary)` matches it. Record `Entry` as the UniProt accession (for example `P11388`) and `Entry Name` (for example `TOP2A_HUMAN`). The accession goes into the data, never into the name. A symbol with no row (for example a non-coding RNA gene) gets `"uniprot_accession": null`.
 
 Human entries (`organism_id:9606`) are used because PathWise names genes by their HGNC (human) symbols, whatever species the evidence came from. The species of each key event stays as the articles reported it.
+
+**Form check.** If a gene part's form is `"protein"` but its HGNC `locus_type` isn't `gene with protein product` (for example a microRNA or other non-coding RNA gene), add it to the list for the user in step 6, as "the paper describes a protein, but HGNC lists this gene as non-coding". Don't change anything.
 
 ## 4. Decide each gene part
 
 - **confirmed**: already the official symbol. Nothing changes.
-- **rename**: one clear official symbol differs from the one used. Replace only the gene part inside each key event that uses it (HGNC lists `TOP2` as the previous symbol of `TOP2A`, so `inhibition_of_top2` → `inhibition_of_top2a`; the rest of the name stays). The old symbol becomes a synonym.
-- **unclear** (several possible matches) or **not found**: nothing changes yet; ask the user in step 6.
+- **rename**: one confirmed official symbol differs from the one used. Replace only the gene part inside each key event that uses it (`ppar_alpha_activation` → `ppara_activation`; HGNC lists `TOP2` as the previous symbol of `TOP2A`, so `inhibition_of_top2` → `inhibition_of_top2a`; the rest of the name stays). The old symbol becomes a synonym. Renames are applied without asking, but each is listed for the user with its reason in step 6.
+- **unclear** (several confirmed candidates) or **not found**: nothing changes yet; ask the user in step 6.
 
 ## 5. Save the results before changing anything
 
@@ -52,26 +71,30 @@ Write `<output folder>/reference_check.json`:
   "hgnc_last_modified": "<from /info>",
   "uniprot_release": "not available through the allowed lookups; see checked_at",
   "gene_parts": [
-    { "gene_part": "top2a", "result": "confirmed", "official_symbol": "TOP2A", "hgnc_id": "HGNC:11989", "uniprot_accession": "P11388", "uniprot_entry_name": "TOP2A_HUMAN", "key_events": ["top2a"] },
-    { "gene_part": "<old>", "result": "rename", "official_symbol": "<NEW>", "hgnc_id": "...", "uniprot_accession": "...", "uniprot_entry_name": "...", "key_events": ["..."], "renamed_to": ["..."] },
-    { "gene_part": "<x>", "result": "unclear", "candidates": ["<SYMBOL1>", "<SYMBOL2>"], "key_events": ["..."], "decision": null }
+    { "gene_part": "top2a", "forms": ["protein"], "result": "confirmed", "found_by": "exact", "official_symbol": "TOP2A", "official_name": "DNA topoisomerase II alpha", "hgnc_id": "HGNC:11989", "locus_type": "gene with protein product", "uniprot_accession": "P11388", "uniprot_entry_name": "TOP2A_HUMAN", "key_events": ["top2a"] },
+    { "gene_part": "pparalpha", "forms": ["protein"], "result": "rename", "found_by": "suggested", "official_symbol": "PPARA", "official_name": "peroxisome proliferator activated receptor alpha", "hgnc_id": "HGNC:9232", "locus_type": "gene with protein product", "uniprot_accession": "Q07869", "uniprot_entry_name": "PPARA_HUMAN", "match_reason": "HGNC official name matches the papers' PPARα; PPARAL is a different gene", "key_events": ["pparalpha_activation"], "renamed_to": ["ppara_activation"] },
+    { "gene_part": "<x>", "forms": ["unspecified"], "result": "unclear", "candidates": [ { "symbol": "<SYMBOL1>", "match_reason": "..." }, { "symbol": "<SYMBOL2>", "match_reason": "..." } ], "key_events": ["..."], "decision": null }
   ],
+  "form_warnings": [],
   "no_gene": ["liver_weight"]
 }
 ```
 
-If the chat is interrupted after this file exists, start again from step 6 using it, and don't repeat the lookups.
+`forms` lists the forms the merged tally gives that symbol across its key events. If the chat is interrupted after this file exists, start again from step 6 using it, and don't repeat the lookups.
 
 ## 6. Apply renames and ask about the rest
 
-1. **Renames.** Follow the relabeling rules in the pathway-extraction skill ("What relabeling may and may not do" in its `references/procedure.md`): a targeted replacement of the term text in each article's working file, never the `original/` copies, never quotes or references. Update `gene_parts` to the new symbol, and in `new_terms.json` set the new `label` (official capitalization) and add the old symbol to `synonyms`.
-   - If a rename would make a key event identical to another key event that already exists (for example `ppar_alpha` becoming `ppara` when `ppara` is already there), don't apply it on your own. Ask: "`ppar_alpha` and `ppara` are the same gene (HGNC:<id>). Merge them into `ppara`?" Before merging, run the loop check from Step 6b of the procedure. If the user says no, leave both and record `"decision": "kept separate"`.
-2. **Unclear and not found.** Show them in one short list, each with its key events and candidates, and ask the user to pick a symbol, keep the name as it is, or leave it for later. Record each answer in the entry's `decision`. Apply picks as renames.
+1. **Renames.** Follow the relabeling rules in the pathway-extraction skill ("What relabeling may and may not do" in its `references/procedure.md`): a targeted replacement of the term text in each article's working file, never the `original/` copies, never quotes or references. Update the `symbol` in `gene_parts` to the new symbol and leave its `form` alone. In `new_terms.json` set the new `label` (official capitalization) and add the old symbol to `synonyms`.
+   - If a rename would make a key event identical to another key event that already exists (for example `ppar_alpha` becoming `ppara` when `ppara` is already there), don't apply it on your own. Ask: "`ppar_alpha` and `ppara` are the same gene (HGNC:9232). Merge them into `ppara`?" Before merging, run the loop check from Step 6b of the procedure. If the user says no, leave both and record `"decision": "kept separate"`. A merge keeps each article's own form; the tally shows `"mixed"` if they differ.
+2. **Show the user one short list**, in this order:
+   - renames found by search or suggestion (not exact, previous or alias matches), each as "old → NEW (reason)", so the user can say if one is wrong; undo any they reject with the same relabeling rules and record `"decision": "undone by user"`;
+   - unclear and not found, each with its key events and candidates; ask the user to pick a symbol, keep the name as it is, or leave it for later, and record each answer in the entry's `decision` (apply picks as renames);
+   - form warnings.
 3. When anything changed, regenerate `merged_tally.json` only, by re-running the merge in Step 7 of the procedure.
 
 ## 7. Finish
 
-Add each key event's ids to `merged_tally.json`: a `gene_refs` list on every key event with gene parts, `[{ "symbol": "top2a", "hgnc_id": "HGNC:11989", "uniprot_accession": "P11388" }]`. Then change the run log's status line to `run status: complete` and add a line `reference check: <checked_at>, HGNC <hgnc_last_modified>`.
+Add each key event's ids to `merged_tally.json`: a `gene_refs` list on every key event with gene parts, one entry per gene part with its form, `[{ "symbol": "top2a", "form": "protein", "hgnc_id": "HGNC:11989", "uniprot_accession": "P11388" }]`. Then change the run log's status line to `run status: complete` and add a line `reference check: <checked_at>, HGNC <hgnc_last_modified>`.
 
 Tell the user in two or three plain lines: how many gene and protein names were checked, how many were confirmed, renamed or left for them, and that the run is complete.
 
