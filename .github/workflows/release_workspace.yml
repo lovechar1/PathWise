@@ -1,0 +1,53 @@
+name: Release pathway-extraction workspace
+
+# Builds pathway-extraction-workspace.zip (the only thing users need to download)
+# and attaches it to a GitHub Release.
+# To publish a new version: push a tag such as  pathway-extraction-v1.4.0
+
+on:
+  push:
+    tags:
+      - 'pathway-extraction-v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Add the current ontology to the workspace
+        run: |
+          if [ ! -f pathway-extraction-workspace/pathwise_ontology.json ]; then
+            cp pathwise_ontology.json pathway-extraction-workspace/
+          fi
+
+      - name: Build the zip
+        run: |
+          zip -r pathway-extraction-workspace.zip pathway-extraction-workspace \
+            -x 'pathway-extraction-workspace/papers/*' \
+            -x 'pathway-extraction-workspace/pathwise_output*' \
+            -x '*.DS_Store'
+          # keep the empty papers folder
+          zip pathway-extraction-workspace.zip pathway-extraction-workspace/papers/.gitkeep
+          unzip -l pathway-extraction-workspace.zip
+
+      - name: Publish the release
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" pathway-extraction-workspace.zip \
+            --title "$GITHUB_REF_NAME" \
+            --notes "Download pathway-extraction-workspace.zip, unzip it, and open the folder in Claude Code. Instructions: pathway-extraction-workspace/.claude/skills/pathway-extraction/README.md"
+
+      - name: Keep the zip as a build artifact (manual runs)
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: pathway-extraction-workspace
+          path: pathway-extraction-workspace.zip

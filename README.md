@@ -3,9 +3,9 @@ Home of PathWise: the open source Adverse Outcome Pathway project.
 
 ## Using the pathway-extraction skill
 
-To extract a pathway from PDF articles with Claude Code, use the [`pathway-extraction-workspace`](pathway-extraction-workspace) folder. Download this repository, open that folder in Claude Code, put your PDFs in its `papers` folder, and ask for the pathway. The folder comes with lockdown settings that keep Claude to your PDFs only, with no internet, past chats or other folders. See [the skill's README](skills/pathway-extraction/README.md#start-here-run-it-in-the-lockdown-workspace) for step-by-step instructions.
+To extract a pathway from PDF articles with Claude Code, you only need one folder, not this whole repository: download `pathway-extraction-workspace.zip` from the [latest release](https://github.com/raptorpharmtox/PathWise/releases/latest), unzip it, open the folder in Claude Code, put your PDFs in its `papers` folder, and ask for the pathway. The folder comes with lockdown settings that keep Claude to your PDFs only. See [the skill's README](pathway-extraction-workspace/.claude/skills/pathway-extraction/README.md#start-here) for step-by-step instructions.
 
-For maintainers: `skills/pathway-extraction` is where the skill is developed. After changing it, copy it into `pathway-extraction-workspace/.claude/skills/pathway-extraction` so the workspace runs the same version.
+For maintainers: the skills live only in `pathway-extraction-workspace/.claude/skills/` (`pathway-extraction` and `reference-check`); edit them there. To publish a new download, push a tag like `pathway-extraction-v1.4.0`. The [release workflow](.github/workflows/release_workspace.yml) zips the workspace, adds the current `pathwise_ontology.json` if the workspace doesn't already have one, and attaches the zip to a release.
 
 # Background
 

@@ -6,9 +6,12 @@
 
   "permissions": {
     "blockReadsOutsideWorkingDirectories": true,
+    "allow": [
+      "WebFetch(domain:rest.genenames.org)",
+      "WebFetch(domain:rest.uniprot.org)"
+    ],
     "deny": [
       "WebSearch",
-      "WebFetch",
       "Bash",
       "PowerShell",
       "mcp__Claude_Browser",
@@ -36,11 +39,11 @@
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "Read|Glob|Grep|Write|Edit|NotebookEdit|LSP",
+        "matcher": "Read|Glob|Grep|Write|Edit|NotebookEdit|LSP|WebFetch",
         "hooks": [
           {
             "type": "command",
-            "command": "shopt -s nocasematch; input=$(cat); case \"$input\" in *',\"agent_id\":\"'*) ;; *) exit 0 ;; esac; case \"$input\" in *'\"tool_name\":\"Read\"'*) ;; *) echo 'PathWise lockdown: helper agents can only read files.' >&2; exit 2 ;; esac; case \"$input\" in *pathwise_output*|*'~'*) echo 'PathWise lockdown: helper agents cannot read run results.' >&2; exit 2 ;; esac; exit 0",
+            "command": "shopt -s nocasematch; input=$(cat); case \"$input\" in *'\"tool_name\":\"WebFetch\"'*) case \"$input\" in *',\"agent_id\":\"'*) echo 'PathWise lockdown: helper agents have no internet.' >&2; exit 2 ;; esac; no() { echo 'PathWise lockdown: only HGNC and UniProt name lookups are allowed.' >&2; exit 2; }; url=$(printf '%s' \"$input\" | sed -n 's/.*\"url\":\"\\([^\"]*\\)\".*/\\1/p'); case \"$url\" in ''|*[[:space:]]*|*'@'*|*'\\'*|*'..'*) no ;; esac; bad=$(printf '%s' \"$url\" | grep -oi '%..' | grep -viE '^%(2[0289c]|3a)$'); [ -z \"$bad\" ] || no; case \"$url\" in 'https://rest.genenames.org/info'|'https://rest.genenames.org/fetch/'*|'https://rest.genenames.org/search/'*) exit 0 ;; 'https://rest.uniprot.org/uniprotkb/search?'*) printf '%s' \"$url\" | grep -q 'format=tsv' || no; [ -z \"$(printf '%s' \"$url\" | grep -oi 'format=[^&#]*' | grep -v '^format=tsv$')\" ] || no; fl=$(printf '%s' \"$url\" | grep -oi 'fields=[^&#]*'); [ -n \"$fl\" ] || no; shopt -u nocasematch; while IFS= read -r x; do case \"$x\" in 'fields='*) ;; *) no ;; esac; for v in $(printf '%s' \"${x#fields=}\" | sed 's/%2[cC]/ /g; s/,/ /g'); do case \"$v\" in accession|id|gene_primary|gene_synonym|protein_name|organism_name|reviewed) ;; *) no ;; esac; done; done <<< \"$fl\"; exit 0 ;; esac; no ;; esac; case \"$input\" in *',\"agent_id\":\"'*) ;; *) exit 0 ;; esac; case \"$input\" in *'\"tool_name\":\"Read\"'*) case \"$input\" in *pathwise_output*|*'~'*) echo 'PathWise lockdown: helper agents cannot read run results.' >&2; exit 2 ;; esac; exit 0 ;; *'\"tool_name\":\"Write\"'*) fp=$(printf '%s' \"$input\" | sed -n 's/.*\"file_path\":\"\\([^\"]*\\)\".*/\\1/p' | tr '\\' '/'); case \"$fp\" in *..*|*'~'*) echo 'PathWise lockdown: invalid result path.' >&2; exit 2 ;; */pathwise_output*/articles/*) exit 0 ;; esac; echo 'PathWise lockdown: helper agents can only write their own result files.' >&2; exit 2 ;; esac; echo 'PathWise lockdown: helper agents can only read files and write their own result files.' >&2; exit 2",
             "onFailure": "block",
             "timeout": 10
           }
