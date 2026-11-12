@@ -159,6 +159,8 @@ When the article reports a mismatch without calling it a test ("in some studies 
 {
   "aop_id": "<mie>@<adverse_outcome>_<article_slug>",
   "extraction_mode": "simplified",
+  "extracted_by_model": "<your model name and exact id, from your own system information, or \"not stated\">",
+  "extracted_on": "<YYYY-MM-DD>",
   "source_article": { "...": "Step 3A" },
   "key_events": [
     { "id": "KE:0", "biological_entity_id": "<term>", "gene_parts": [], "stressor": true, "mie": false, "adverse_outcome": false, "level": "molecular", "species": ["unspecified"], "source_type": "text", "evidence": "<verbatim quote>", "reference_ids": [], "quality": { "counterfactual_evidence": "unknown", "disprove_attempts": "unknown", "quotes": [] }, "source_articles": ["<article_slug>"] }
@@ -202,6 +204,8 @@ If EXTRACTION MODE is Full, also record the following on the same read, only whe
 6. **`layers`:** each key event or relationship carrying any of 1–3 gets `layers`, listing which apply: `"species_conditional"`, `"circumstance_conditional"`, `"genetic_conditional"` (matching its `gate_type` or `species_annotation`; `special_circumstances` counts as `"circumstance_conditional"`), `"confounder"`, `"developmental_window"`. Items with none have no `layers`.
 
 ## Step 3: Bibliography
+
+**Model:** set `extracted_by_model` to the model name and exact model id stated in your own system information (for example `Claude Opus 5.5 (claude-opus-5-5)`). Never guess; if it isn't stated, write `"not stated"`. Set `extracted_on` to today's date (`YYYY-MM-DD`) as your system information gives it, never estimated; if it isn't given, write `"not stated"`. Put both fields in `disproved_steps.json` too when you write one.
 
 **A. This article:** `source_article: { "article_slug", "title", "authors", "affiliations", "journal", "publication_date", "doi", "pdf_file" }`.
 
@@ -289,6 +293,8 @@ Illustrative only. It shows format and granularity, not real biology from any ar
 {
   "aop_id": "ppara@liver_weight_doe_2020",
   "extraction_mode": "simplified",
+  "extracted_by_model": "Claude Opus 5.5 (claude-opus-5-5)",
+  "extracted_on": "2026-11-12",
   "source_article": { "article_slug": "doe_2020", "title": "<title>", "authors": ["<author>"], "affiliations": ["<affiliation>"], "journal": "<journal>", "publication_date": "2020", "doi": null, "pdf_file": "doe_2020.pdf" },
   "key_events": [
     { "id": "KE:0", "biological_entity_id": "perfluorooctanoic_acid", "gene_parts": [], "stressor": true, "mie": false, "adverse_outcome": false, "level": "molecular", "species": ["unspecified"], "source_type": "text", "evidence": "<quote>", "reference_ids": [], "quality": { "counterfactual_evidence": "unknown", "disprove_attempts": "unknown", "quotes": [] }, "source_articles": ["doe_2020"] },

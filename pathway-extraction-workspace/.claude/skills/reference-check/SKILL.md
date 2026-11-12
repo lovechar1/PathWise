@@ -2,7 +2,7 @@
 name: reference-check
 version: 1.4.0
 description: Final step of a PathWise pathway-extraction run. Checks the gene and protein names in a finished run's key events against HGNC and UniProt, finds the official symbol when a paper used an informal name (Claude suggests, the database confirms), renames the gene part to that symbol, records HGNC and UniProt ids, and marks the run complete. Use only when the pathway-extraction skill hands over (run status "awaiting reference check") or when the user asks to finish a PathWise run. Never use it for anything else, and never during extraction.
-compatibility: Runs inside the PathWise lockdown workspace. Needs internet access to rest.genenames.org and rest.uniprot.org (the lockdown allows only name lookups there, only from the main conversation).
+compatibility: Runs inside the PathWise lockdown workspace. Needs internet access to rest.genenames.org and rest.uniprot.org (the lockdown allows only name lookups there, only from the main conversation or a `web-fetch` helper agent).
 ---
 
 # PathWise reference check
@@ -28,7 +28,9 @@ For each symbol, also gather **what the papers meant**, for step 3e and 3f: the 
 
 ## 3. Find the official symbol for each gene part
 
-All lookups use WebFetch with the prompt "Return the response text exactly as received, with no summary or commentary." Use only these addresses; the lockdown refuses anything else. Write symbols in upper case in the address, and encode a space as `%20` and a double quote as `%22`.
+All lookups use WebFetch with the prompt "Return the response text exactly as received, with no summary or commentary." Use only these addresses; the lockdown refuses anything else.
+
+If WebFetch isn't in this conversation (some versions of the Claude app only fetch through a helper), send the lookups to `web-fetch` helper agents instead (the Agent tool, subagent type `web-fetch`; the lockdown lets only this kind of helper reach HGNC and UniProt, and only for these addresses). Give each helper a numbered list of up to 20 addresses for one lookup step, and the prompt: "Use WebFetch on each address below with the prompt 'Return the response text exactly as received, with no summary or commentary.' Reply with each address on its own line followed by the response text exactly as received, or `REFUSED` or `FAILED`. Don't summarize, interpret or add anything." Launch the helpers for independent addresses at once. Use only what the replies quote from HGNC and UniProt; if a reply is summarized instead of quoted, fetch that address again. Write symbols in upper case in the address, and encode a space as `%20` and a double quote as `%22`.
 
 **a. Database version, once:** `https://rest.genenames.org/info`. Record `lastModified`.
 
