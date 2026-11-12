@@ -61,7 +61,11 @@ It doesn't extract dose or exposure study parameters (it records which species a
 
 ## Required inputs — ask for these, don't wait for a pre-filled prompt
 
-This skill is meant to be invoked with nothing more than "extract the pathway for X" — it is not a template the user fills in ahead of time. Unless the triggering message already states an input plainly, ask for it directly before doing anything else, as a pop-up (see "Ask every question as a pop-up with buttons" below). Don't guess, and don't start Step 1 on a partial set:
+This skill is meant to be invoked with nothing more than "extract the pathway for X" — it is not a template the user fills in ahead of time. Unless the triggering message already states an input plainly, ask for it directly before doing anything else (see "How to ask questions" below). Don't guess, and don't start Step 1 on a partial set.
+
+**Before asking for any input, check for an earlier run** (see "Starting a run" in references/procedure.md): if one can be resumed, ask first whether to resume it or start a new run. If the user resumes, its inputs are reused and not asked again. If they start a new run, ask for every input from scratch: **never show, suggest or prefill an answer from an earlier run's `run_log.md`**, and don't mention what it said. The earlier log is read only to decide whether a run can be resumed.
+
+The inputs:
 
 - **RUN BY** — required; ask it second, right after EXTRACTION MODE. The name of the person running this extraction, typed by the user (never inferred from the computer, account or folder names, and never guessed). It's recorded as `run by:` in `run_log.md` and `run_by` in `merged_tally.json`, and used as `decided_by` for every review decision, so the user isn't asked again later.
 - **TOPIC** — required. The mechanism/subject to extract. Scope extraction strictly to this; if an article discusses other mechanisms in passing, ignore them. When TOPIC names more than one element (e.g. "X and Y"), a candidate key event or relationship must connect — directly, or through the chain — to every element named, not just one. Being related to only one half of a multi-part topic isn't enough to keep it; that's exactly how a plausible-looking but off-topic branch sneaks in (e.g. a CFTR-related mechanism that never actually touches oxidative stress, when the topic is "oxidative stress and CFTR").
@@ -91,14 +95,27 @@ The main skill's mechanics (starting and resuming a run, launching agents, mergi
 
 ## Talking to the user during and after a run
 
-**Ask every question as a pop-up with buttons.** Whenever this skill or the reference check needs an answer from the user, use the AskUserQuestion tool, never a question typed in chat. Put the plain-language explanation in the question and the choices on the buttons, and list your recommended choice first. Examples:
+**How to ask questions.** There are two kinds of question, asked two different ways.
+
+**1. Choices: a pop-up with buttons.** When the answer is one of a few options, use the AskUserQuestion tool, never a question typed in chat. Put the plain-language explanation in the question and the choices on the buttons, and list your recommended choice first. Examples:
 - extraction mode: "Simplified" / "Full", with the explanation above in the question;
 - ontology file: each `pathwise_ontology*.json` file found in the workspace / "No ontology file";
 - the papers folder: "Yes, only this run's PDFs" / "No, let me fix the folder";
 - a possible duplicate or disagreement: "Merge" / "Keep separate", one question per pair (up to four questions per pop-up; show the next pop-up for the rest);
 - a truly unclear gene name in the reference check: one button per candidate symbol, plus "Keep as written".
 
-Free-text answers (TOPIC, TOPIC DESCRIPTION) still use a pop-up: give one or two example answers as buttons and say in the question that the user can type their own answer instead (pop-ups always offer that). TOPIC and TOPIC DESCRIPTION have no "Skip" button. RUN BY and ARTICLE SELECTION are different, because they must be the user's own words. For RUN BY, the question is "What name should be recorded as the person running this extraction?". For ARTICLE SELECTION, put the four things and the example in the question. For both, make the two buttons "I'll type it in the box" and "I need a moment" — neither is an answer — and tell the user to type their answer in the pop-up's own text box. If they pick a button instead of typing, show the pop-up again until they type an answer. Only if AskUserQuestion isn't available, ask in chat with numbered choices. Never ask whether to start the reference check: it starts on its own (Step 9).
+- resuming: "Resume the earlier run" / "Start a new run".
+
+Only if AskUserQuestion isn't available, ask in chat with numbered choices.
+
+**2. Typed answers: a plain question in chat, with no pop-up and no buttons.** RUN BY, TOPIC, TOPIC DESCRIPTION and ARTICLE SELECTION are answered in the user's own words, so ask each as a short question in the chat and stop, so the user types the answer in the normal message box. Ask one at a time, in this order: RUN BY, then TOPIC, then TOPIC DESCRIPTION, then ARTICLE SELECTION. Say what's needed and give one example where it helps (never for RUN BY), for example:
+- RUN BY: "What name should be recorded as the person running this extraction?"
+- TOPIC DESCRIPTION: "In 1 to 3 sentences, what counts as in scope? For example the cause, the outcome, which species or models, and the type of exposure. Don't list the pathway steps."
+- ARTICLE SELECTION: the four things and the example from the inputs list above.
+
+None of these can be skipped. Never offer an answer for the user to accept, and never offer an answer from an earlier run.
+
+Never ask whether to start the reference check: it starts on its own (Step 9).
 
 **During the run:** as each article agent returns, tell the user immediately if the model's safeguards flagged it (quote the error; what to do is in "When an article agent finishes" in references/procedure.md), if it failed to parse, was excluded as entirely off-topic, was borderline on-topic, was borderline and yielded zero key events, or was judged on-topic but yielded zero key events (the last two more prominently), each with its one-line reason. Say nothing for a normal article, and never mention partial exclusions, source type, adverse-outcome flags, single-source flags, or quality results. Details are in "Write your files and reply" in [references/article_agent.md](references/article_agent.md).
 
