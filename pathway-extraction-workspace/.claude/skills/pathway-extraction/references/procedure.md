@@ -2,6 +2,8 @@
 
 This is the specification for the main skill: starting a run, launching the paper agents, merging, the tally and the reviews. **Paper agents follow [article_agent.md](article_agent.md) instead**, which defines everything about one article's extraction: the naming rules, the fields on each key event and relationship, quality assessments, Full-mode fields, and the per-article file. Read article_agent.md too before Step 6, because merging and the tally work on the fields it defines.
 
+Every question to the user in this procedure (resuming a run, a new folder name, the reviews in Step 8, the loop check) is asked as a pop-up with buttons using the AskUserQuestion tool, as described in "Ask every question as a pop-up with buttons" in SKILL.md. When a review has more items than one pop-up holds, show the short list in chat first, then ask in pop-ups, up to four items per pop-up.
+
 ## Scope
 
 Always in scope, in both extraction modes: one pathway file per article (key events, relationships, the stressor, MIE and adverse-outcome flags, level and species, quality assessments, disproved steps, verbatim quotes and the citations behind each quote), terminology alignment across the batch, and a final tally of how many articles *and* how many distinct cited sources support each key event and relationship.

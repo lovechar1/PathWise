@@ -46,7 +46,7 @@ It doesn't extract dose or exposure study parameters (it records which species a
 
 ## Required inputs — ask for these, don't wait for a pre-filled prompt
 
-This skill is meant to be invoked with nothing more than "extract the pathway for X" — it is not a template the user fills in ahead of time. Unless the triggering message already states an input plainly, ask for it directly in chat before doing anything else. Don't guess, and don't start Step 1 on a partial set:
+This skill is meant to be invoked with nothing more than "extract the pathway for X" — it is not a template the user fills in ahead of time. Unless the triggering message already states an input plainly, ask for it directly before doing anything else, as a pop-up (see "Ask every question as a pop-up with buttons" below). Don't guess, and don't start Step 1 on a partial set:
 
 - **TOPIC** — required. The mechanism/subject to extract. Scope extraction strictly to this; if an article discusses other mechanisms in passing, ignore them. When TOPIC names more than one element (e.g. "X and Y"), a candidate key event or relationship must connect — directly, or through the chain — to every element named, not just one. Being related to only one half of a multi-part topic isn't enough to keep it; that's exactly how a plausible-looking but off-topic branch sneaks in (e.g. a CFTR-related mechanism that never actually touches oxidative stress, when the topic is "oxidative stress and CFTR").
 - **TOPIC DESCRIPTION** — optional but ask for it anyway rather than skipping straight past it; the user can decline. A short 1-3 sentence elaboration of TOPIC's scope: which direction of causation, which mechanism type (e.g. genetic vs. acquired), which organ or exposure. Its only job is to disambiguate what counts as in-scope subject matter — it must never describe what the pathway's steps or structure should turn out to be. If it reads like a preview of key events in order, it's doing the wrong job and will bias extraction exactly the way the hard constraint above forbids; rewrite it as a boundary statement instead. Use it the same way as TOPIC itself when deciding whether something belongs.
@@ -68,6 +68,15 @@ This skill is meant to be invoked with nothing more than "extract the pathway fo
 The main skill's mechanics (starting and resuming a run, launching agents, merging, the tally and the reviews) are in **[references/procedure.md](references/procedure.md)**. Everything about extracting one article (naming rules, fields, quality assessments, the per-article file and examples) is in **[references/article_agent.md](references/article_agent.md)**. Read both before starting a run; they are the specification, not background reading.
 
 ## Talking to the user during and after a run
+
+**Ask every question as a pop-up with buttons.** Whenever this skill or the reference check needs an answer from the user, use the AskUserQuestion tool, never a question typed in chat. Put the plain-language explanation in the question and the choices on the buttons, and list your recommended choice first. Examples:
+- extraction mode: "Simplified" / "Full", with the explanation above in the question;
+- ontology file: each `pathwise_ontology*.json` file found in the workspace / "No ontology file";
+- the papers folder: "Yes, only this run's PDFs" / "No, let me fix the folder";
+- a possible duplicate or disagreement: "Merge" / "Keep separate", one question per pair (up to four questions per pop-up; show the next pop-up for the rest);
+- a truly unclear gene name in the reference check: one button per candidate symbol, plus "Keep as written".
+
+Free-text answers (TOPIC, TOPIC DESCRIPTION, ARTICLE SELECTION, a name to record as `decided_by`) still use a pop-up: give one or two example answers as buttons and say in the question that the user can type their own answer instead (pop-ups always offer that), plus "Skip" when the input is optional. Only if AskUserQuestion isn't available, ask in chat with numbered choices. Never ask whether to start the reference check: it starts on its own (Step 9).
 
 **During the run:** as each article agent returns, tell the user immediately if it failed to parse, was excluded as entirely off-topic, was borderline on-topic, was borderline and yielded zero key events, or was judged on-topic but yielded zero key events (the last two more prominently), each with its one-line reason. Say nothing for a normal article, and never mention partial exclusions, source type, adverse-outcome flags, single-source flags, or quality results. Details are in "Write your files and reply" in [references/article_agent.md](references/article_agent.md).
 
