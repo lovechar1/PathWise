@@ -1,0 +1,1708 @@
+{
+  "ontology": "PathWise Core Ontology",
+  "version": "1.1.0",
+  "categories": [
+    {
+      "category": "biological pathways",
+      "terms": [
+        {
+          "id": "unk@steatohepatitis_1",
+          "label": "steatohepatitis with unknown etiology",
+          "definition": "Fatty liver disease with inflammation and liver cell damage, but the cause is not known. Involves PPARA and HSD17B4.",
+          "sex": ["known_to_be_sex_neutral"],
+          "organism": ["human", "mouse", "rat"]
+        },
+        {
+          "id": "unk@steatohepatitis_2",
+          "label": "steatohepatitis with unknown etiology",
+          "definition": "Fatty liver disease with inflammation and liver cell damage, but the cause is not known. Involves PPARA and NR0B2.",
+          "sex": ["known_to_be_sex_neutral"],
+          "organism": ["human", "mouse", "rat"]
+        },
+        {
+          "id": "unk@steatohepatitis_3",
+          "label": "steatohepatitis with unknown etiology",
+          "definition": "Fatty liver disease with inflammation and liver cell damage, but the cause is not known. Starts at HSD17B4.",
+          "sex": ["known_to_be_sex_neutral"],
+          "organism": ["human", "mouse", "rat"]
+        },
+        {
+          "id": "pulmonary_edema@death",
+          "label": "pulmonary edema leading to death",
+          "definition": "Fluid accumulation in the lungs that can lead to respiratory failure and death.",
+          "sex": ["known_to_be_sex_neutral"],
+          "organism": ["human", "mouse", "rat"]
+        },
+        {
+          "id": "oxidative_stress@lung_function",
+          "label": "oxidative stress leading to impaired lung function",
+          "definition": "Oxidative stress in the lungs that can lead to impaired lung function.",
+          "sex": ["known_to_be_sex_neutral"],
+          "organism": ["human", "mouse", "rat"]
+        }
+      ]
+    },
+    {
+      "category": "sex",
+      "terms": [
+        {
+          "id": "male",
+          "label": "male",
+          "definition": "Refers to the sex of an organism that produces small, mobile gametes (sperm). Use this term if there is evidence that the biological pathway or event is specific to males."
+        },
+        {
+          "id": "female",
+          "label": "female",
+          "definition": "Refers to the sex of an organism that produces larger, immobile gametes (eggs). Use this term if there is evidence that the biological pathway or event is specific to females."
+        },
+        {
+          "id": "hermaphrodite",
+          "label": "hermaphrodite",
+          "definition": "Refers to an organism that has both male and female reproductive organs and can produce both types of gametes throughout a lifespan, but not necessarily at the same time. Use this term if there is evidence that the biological pathway or event is specific to hermaphrodites."
+        },
+        {
+          "id": "not_known_to_be_sex_specific",
+          "label": "not known to be sex specific",
+          "definition": "Refers to a biological pathway or event for which there is no current empirical evidence or established scientific consensus indicating that it is specific to a particular sex. This term captures an absence of evidence, not evidence of absence."
+        },
+        {
+          "id": "known_to_be_sex_neutral",
+          "label": "known to be sex neutral",
+          "definition": "Refers to a biological pathway or event for which there is empirical evidence or established scientific consensus that it is not specific to a particular sex. This term is used when the biological pathway or event is known to occur in both sexes."
+        },
+        {
+          "id": "believed_to_be_sex_neutral",
+          "label": "believed to be sex neutral",
+          "definition": "Refers to a biological pathway or event for which the available evidence suggests it is not specific to a particular sex; however, the data are not extensive. This term is used when the biological pathway or event is believed to occur in both sexes."
+        },
+        {
+          "id": "intersex",
+          "label": "intersex",
+          "definition": "Refers to an organism that has a combination of biological sex characteristics that do not fit typical definitions of male or female. This can include variations in chromosomes, gonads, or reproductive anatomy. Use this term if there is evidence that the biological pathway or event is specific to intersex individuals."
+        }
+      ]
+    },
+    {
+      "category": "organisms",
+      "terms": [
+        {
+          "id": "human",
+          "label": "human",
+          "definition": "Refers to Homo sapiens, the species of bipedal primates to which modern humans belong. Use this term if there is evidence that the biological pathway or event is known to occur in humans."
+        },
+        {
+          "id": "mammals",
+          "label": "mammals",
+          "definition": "Mammals are a clade of warm-blooded vertebrate animals characterized by the presence of mammary glands, hair or fur at some stage of development."
+        },
+        {
+          "id": "mouse",
+          "label": "mouse",
+          "definition": "Mus musculus is a small, nocturnal mammal belonging to the order Rodentia and the family Muridae."
+        },
+        {
+          "id": "rat",
+          "label": "rat",
+          "definition": "Rattus norvegicus is a medium-sized rodent belonging to the family Muridae."
+        }
+      ]
+    },
+    {
+      "category": "biological entities",
+      "terms": [
+        {
+          "id": "unknown_key_event",
+          "label": "unknown key event",
+          "definition": "A placeholder for a key event that is not specified.",
+          "locations": ["anywhere"]
+        },
+        {
+          "id": "nr1h4",
+          "label": "NR1H4",
+          "definition": "Farnesoid X receptor (FXR), encoded by NR1H4, is a nuclear receptor that regulates bile acid, lipid, and glucose metabolism.",
+          "synonyms": ["FXR", "farnesoid X receptor"],
+          "locations": ["liver", "intestines"]
+        },
+        {
+          "id": "pparg",
+          "label": "PPARG",
+          "definition": "Peroxisome proliferator-activated receptor gamma (PPARγ) is a nuclear receptor that regulates glucose and lipid metabolism, as well as inflammation.",
+          "synonyms": ["PPARγ", "PPAR-gamma", "PPARgamma", "PPARg", "NR1C3"],
+          "locations": ["liver", "intestines"]
+        },
+        {
+          "id": "ppard",
+          "label": "PPARD",
+          "definition": "Peroxisome proliferator-activated receptor delta (PPARδ, also called PPARβ) is a nuclear receptor that regulates fatty acid oxidation and energy homeostasis.",
+          "synonyms": ["PPARδ", "PPAR-delta", "PPARd", "PPARβ", "PPAR-beta", "PPARB", "NR1C2"],
+          "locations": ["liver", "intestines"]
+        },
+        {
+          "id": "ppargc1a",
+          "label": "PPARGC1A",
+          "definition": "PPARG coactivator 1 alpha (PGC-1α) is a transcriptional coactivator that regulates energy metabolism and mitochondrial biogenesis.",
+          "synonyms": ["PGC-1α", "PGC-1alpha", "PGC1A", "PPARgamma coactivator 1-alpha", "ppargamma_coactivator_1alpha"],
+          "locations": ["liver", "intestines"]
+        },
+        {
+          "id": "liver_x_receptor",
+          "label": "liver X receptor",
+          "definition": "Liver X receptor (LXR) is a nuclear receptor that regulates cholesterol, fatty acid, and glucose metabolism. It has two forms, LXRα (NR1H3) and LXRβ (NR1H2), so it is written out rather than given one gene symbol.",
+          "synonyms": ["LXR"],
+          "locations": ["liver", "intestines"]
+        },
+        {
+          "id": "ppara",
+          "label": "PPARA",
+          "definition": "Peroxisome proliferator-activated receptor alpha (PPARα) is a nuclear receptor that regulates fatty acid metabolism and inflammation.",
+          "synonyms": ["PPARα", "PPAR-alpha", "PPARalpha", "PPARa", "NR1C1"],
+          "locations": ["liver", "intestines"]
+        },
+        {
+          "id": "nr0b2",
+          "label": "NR0B2",
+          "definition": "Small heterodimer partner (SHP), encoded by NR0B2, is a nuclear receptor that regulates bile acid and lipid metabolism.",
+          "synonyms": ["SHP", "small heterodimer partner"],
+          "locations": ["liver", "intestines"]
+        },
+        {
+          "id": "hsd17b4",
+          "label": "HSD17B4",
+          "definition": "HSD17B4 (also called DHB4 or D-bifunctional protein) is a peroxisomal enzyme involved in fatty acid oxidation and bile acid synthesis.",
+          "synonyms": ["DHB4", "DBP", "D-bifunctional protein", "MFE-2", "DHB4/HSD17B4"],
+          "locations": ["liver", "intestines"]
+        },
+        {
+          "id": "oxidative_stress",
+          "label": "oxidative stress",
+          "definition": "A condition characterized by an imbalance between the production of reactive oxygen species (ROS) and the body's ability to detoxify them, leading to cellular damage.",
+          "locations": ["lungs", "anywhere"]
+        },
+        {
+          "id": "cftr_function",
+          "label": "CFTR function",
+          "definition": "The function of the cystic fibrosis transmembrane conductance regulator (CFTR) protein, which is a chloride channel involved in maintaining fluid balance in epithelial tissues.",
+          "locations": ["lungs"]
+        },
+        {
+          "id": "airway_surface_liquid_height",
+          "label": "airway surface liquid height",
+          "definition": "The thickness of the liquid layer on the surface of the airway epithelium, which is important for mucociliary clearance.",
+          "locations": ["lungs"]
+        },
+        {
+          "id": "foxj1",
+          "label": "FOXJ1",
+          "definition": "Forkhead box J1 (FOXJ1) is a transcription factor that regulates the expression of genes involved in cilia formation and function.",
+          "synonyms": ["FOXJ1 protein", "foxj1_protein", "HFH-4"],
+          "locations": ["lungs"]
+        },
+        {
+          "id": "motile_cilia_number",
+          "label": "motile cilia number",
+          "definition": "The number of motile cilia on epithelial cells, which is important for mucociliary clearance.",
+          "synonyms": ["motile cilia number/length", "motile_cilia_number_length"],
+          "locations": ["lungs"]
+        },
+        {
+          "id": "motile_cilia_length",
+          "label": "motile cilia length",
+          "definition": "The length of motile cilia on epithelial cells, which is important for mucociliary clearance.",
+          "synonyms": ["motile cilia number/length", "motile_cilia_number_length"],
+          "locations": ["lungs"]
+        },
+        {
+          "id": "ciliary_beat_frequency",
+          "label": "ciliary beat frequency",
+          "definition": "The rate at which cilia beat in a coordinated manner to clear mucus from the airways.",
+          "locations": ["lungs"]
+        },
+        {
+          "id": "mucociliary_clearance",
+          "label": "mucociliary clearance",
+          "definition": "The process by which mucus and trapped particles are cleared from the airways by the coordinated beating of cilia.",
+          "locations": ["lungs"]
+        },
+        {
+          "id": "lung_function",
+          "label": "lung function",
+          "definition": "The ability of the lungs to perform normal respiratory functions, including gas exchange and ventilation.",
+          "synonyms": ["impaired lung function", "impaired_lung_function", "lung function impairment", "lung_function_impairment"],
+          "locations": ["lungs"]
+        },
+        {
+          "id": "respiratory_failure",
+          "label": "respiratory failure",
+          "definition": "A condition in which the lungs are unable to provide adequate oxygenation or remove carbon dioxide from the blood, leading to respiratory distress.",
+          "locations": ["lungs"]
+        },
+        {
+          "id": "pulmonary_edema",
+          "label": "pulmonary edema",
+          "definition": "A condition characterized by excess fluid accumulation in the lungs, often leading to difficulty breathing and impaired gas exchange.",
+          "synonyms": ["fluid buildup in the lungs", "fluid_buildup_in_the_lungs", "fluidd_buildup_in_the_lungs"],
+          "locations": ["lungs"]
+        },
+        {
+          "id": "lung_tissue_damage",
+          "label": "lung tissue damage",
+          "definition": "Harm to lung tissue that impairs its structure and function, often resulting from inflammation or infection.",
+          "locations": ["lungs"]
+        },
+        {
+          "id": "lung_ischemia",
+          "label": "lung ischemia",
+          "definition": "A condition characterized by reduced blood flow to the lungs, leading to tissue damage and impaired function.",
+          "locations": ["lungs"]
+        },
+        {
+          "id": "lung_infarction",
+          "label": "lung infarction",
+          "definition": "The death of lung tissue due to lack of blood supply, often resulting from a blockage in the pulmonary circulation.",
+          "locations": ["lungs"]
+        },
+        {
+          "id": "lung_abscess",
+          "label": "lung abscess",
+          "definition": "A localized collection of pus in the lung tissue, often resulting from infection.",
+          "locations": ["lungs"]
+        },
+        {
+          "id": "pleural_empyema",
+          "label": "pleural empyema",
+          "definition": "A collection of pus in the pleural cavity surrounding the lungs, often resulting from pneumonia or lung infection.",
+          "synonyms": ["lung empyema", "lung_empyema", "empyema"],
+          "locations": ["lungs"]
+        },
+        {
+          "id": "lung_atelectasis",
+          "label": "lung atelectasis",
+          "definition": "The collapse or incomplete expansion of a lung or part of a lung, leading to impaired gas exchange.",
+          "locations": ["lungs"]
+        },
+        {
+          "id": "pulmonary_hypertension",
+          "label": "pulmonary hypertension",
+          "definition": "High blood pressure in the pulmonary arteries, which can lead to heart failure and impaired lung function.",
+          "synonyms": ["lung hypertension", "lung_hypertension"],
+          "locations": ["lungs"]
+        },
+        {
+          "id": "lung_cystic_disease",
+          "label": "lung cystic disease",
+          "definition": "A condition characterized by the formation of cysts in the lung tissue, which can lead to impaired lung function.",
+          "locations": ["lungs"]
+        },
+        {
+          "id": "lung_hyperinflation",
+          "label": "lung hyperinflation",
+          "definition": "An abnormal increase in the volume of air in the lungs, often associated with chronic obstructive pulmonary disease (COPD).",
+          "locations": ["lungs"]
+        },
+        {
+          "id": "lung_hypoplasia",
+          "label": "lung hypoplasia",
+          "definition": "Underdevelopment of lung tissue, which can lead to impaired lung function and respiratory distress.",
+          "locations": ["lungs"]
+        },
+        {
+          "id": "lung_agenesis",
+          "label": "lung agenesis",
+          "definition": "The complete absence of lung tissue, which can lead to severe respiratory impairment.",
+          "locations": ["lungs"]
+        },
+        {
+          "id": "lung_aplasia",
+          "label": "lung aplasia",
+          "definition": "The failure of lung tissue to develop properly, leading to impaired lung function.",
+          "locations": ["lungs"]
+        },
+        {
+          "id": "lung_hyperplasia",
+          "label": "lung hyperplasia",
+          "definition": "An increase in the number of cells in the lung tissue, often resulting from chronic irritation or inflammation.",
+          "locations": ["lungs"]
+        },
+        {
+          "id": "lung_metaplasia",
+          "label": "lung metaplasia",
+          "definition": "A reversible change in which one type of lung cell is replaced by another type, often in response to chronic irritation or inflammation.",
+          "locations": ["lungs"]
+        },
+        {
+          "id": "lung_neoplasia",
+          "label": "lung neoplasia",
+          "definition": "The abnormal growth of lung cells, which can lead to the formation of tumors, either benign or malignant.",
+          "locations": ["lungs"]
+        },
+        {
+          "id": "lung_adenocarcinoma",
+          "label": "lung adenocarcinoma",
+          "definition": "A type of lung cancer that originates in the glandular cells of the lung tissue, often associated with smoking and environmental exposures.",
+          "locations": ["lungs"]
+        },
+        {
+          "id": "lung_squamous_cell_carcinoma",
+          "label": "lung squamous cell carcinoma",
+          "definition": "A type of lung cancer that originates in the squamous cells lining the airways, often associated with smoking.",
+          "locations": ["lungs"]
+        },
+        {
+          "id": "lung_small_cell_carcinoma",
+          "label": "lung small cell carcinoma",
+          "definition": "A type of aggressive lung cancer that originates in neuroendocrine cells, often associated with smoking.",
+          "locations": ["lungs"]
+        },
+        {
+          "id": "lung_large_cell_carcinoma",
+          "label": "lung large cell carcinoma",
+          "definition": "A type of lung cancer that originates in large, undifferentiated cells, often associated with smoking.",
+          "locations": ["lungs"]
+        },
+        {
+          "id": "lung_metastasis",
+          "label": "lung metastasis",
+          "definition": "The spread of cancer cells from other parts of the body to the lungs, leading to secondary tumors.",
+          "locations": ["lungs"]
+        },
+        {
+          "id": "lung_adenoma",
+          "label": "lung adenoma",
+          "definition": "A benign tumor that originates in the glandular cells of the lung tissue.",
+          "locations": ["lungs"]
+        },
+        {
+          "id": "lung_carcinoid_tumor",
+          "label": "lung carcinoid tumor",
+          "definition": "A slow-growing tumor that originates in neuroendocrine cells of the lung, often considered a type of neuroendocrine tumor.",
+          "locations": ["lungs"]
+        },
+        {
+          "id": "lung_lymphoma",
+          "label": "lung lymphoma",
+          "definition": "A type of cancer that originates in the lymphatic tissue of the lungs, often associated with immune system disorders.",
+          "locations": ["lungs"]
+        },
+        {
+          "id": "lung_sarcoma",
+          "label": "lung sarcoma",
+          "definition": "A rare type of cancer that originates in the connective tissues of the lungs, such as muscle or fat.",
+          "locations": ["lungs"]
+        },
+        {
+          "id": "pleural_mesothelioma",
+          "label": "pleural mesothelioma",
+          "synonyms": ["lung pleural mesothelioma", "lung_pleural_mesothelioma"],
+          "definition": "A rare and aggressive cancer that originates in the pleura, the lining of the lungs, often associated with asbestos exposure.",
+          "locations": ["lungs"]
+        },
+        {
+          "id": "fluid_buildup",
+          "label": "fluid buildup",
+          "definition": "An accumulation of excess fluid in tissues or cavities, which can lead to swelling and impaired function.",
+          "locations": ["lungs", "anywhere"]
+        },
+        {
+          "id": "death",
+          "label": "death",
+          "definition": "The cessation of all biological functions that sustain an organism, leading to the end of life.",
+          "locations": ["anywhere"]
+        },
+        {
+          "id": "inflammation",
+          "label": "inflammation",
+          "definition": "A biological response to harmful stimuli, characterized by redness, swelling, heat, and pain, which can lead to tissue damage.",
+          "locations": ["anywhere"]
+        },
+        {
+          "id": "cellular_damage",
+          "label": "cellular damage",
+          "definition": "Harm to cells that impairs their function or structure, often resulting from oxidative stress or inflammation.",
+          "locations": ["anywhere"]
+        },
+        {
+          "id": "metabolic_disorder",
+          "label": "metabolic disorder",
+          "definition": "A condition that disrupts normal metabolism, leading to an imbalance in the body's biochemical processes.",
+          "locations": ["anywhere"]
+        },
+        {
+          "id": "immune_response",
+          "label": "immune response",
+          "definition": "The body's defense mechanism against pathogens, characterized by the activation of immune cells and the production of antibodies.",
+          "locations": ["anywhere"]
+        },
+        {
+          "id": "hormonal_regulation",
+          "label": "hormonal regulation",
+          "definition": "The process by which hormones control various physiological functions in the body, including metabolism, growth, and reproduction.",
+          "locations": ["anywhere"]
+        },
+        {
+          "id": "fatty_acid_beta_oxidation",
+          "label": "fatty acid beta-oxidation",
+          "definition": "A metabolic process that breaks down fatty acids to produce energy, primarily occurring in the mitochondria of cells.",
+          "locations": ["liver", "intestines"]
+        },
+        {
+          "id": "bile_acid_synthesis",
+          "label": "bile acid synthesis",
+          "definition": "The biochemical pathway that produces bile acids from cholesterol, which are essential for digestion and absorption of dietary fats.",
+          "locations": ["liver", "intestines"]
+        },
+        {
+          "id": "lipid_metabolism",
+          "label": "lipid metabolism",
+          "definition": "The set of biochemical processes that involve the synthesis and degradation of lipids in the body, including fatty acids and cholesterol.",
+          "locations": ["liver", "intestines"]
+        },
+        {
+          "id": "glucose_metabolism",
+          "label": "glucose metabolism",
+          "definition": "The biochemical processes that convert glucose into energy, including glycolysis, gluconeogenesis, and the citric acid cycle.",
+          "locations": ["liver", "intestines"]
+        },
+        {
+          "id": "cholesterol_metabolism",
+          "label": "cholesterol metabolism",
+          "definition": "The set of biochemical processes that involve the synthesis, transport, and degradation of cholesterol in the body.",
+          "locations": ["liver", "intestines"]
+        },
+        {
+          "id": "bile_acid_transport",
+          "label": "bile acid transport",
+          "definition": "The process by which bile acids are transported across cell membranes, primarily in the intestines and liver.",
+          "locations": ["liver", "intestines"]
+        },
+        {
+          "id": "immune_cell_activation",
+          "label": "immune cell activation",
+          "definition": "The process by which immune cells are stimulated to respond to pathogens or other harmful stimuli, leading to an immune response.",
+          "locations": ["anywhere"]
+        },
+        {
+          "id": "oxidative_phosphorylation",
+          "label": "oxidative phosphorylation",
+          "definition": "A metabolic pathway that uses energy released from the oxidation of nutrients to produce ATP, primarily occurring in the mitochondria.",
+          "locations": ["anywhere"]
+        },
+        {
+          "id": "apoptosis",
+          "label": "apoptosis",
+          "definition": "A programmed cell death process that eliminates damaged or unwanted cells in a controlled manner, preventing inflammation.",
+          "locations": ["anywhere"]
+        },
+        {
+          "id": "autophagy",
+          "label": "autophagy",
+          "definition": "A cellular process that degrades and recycles cellular components, helping to maintain cellular homeostasis and respond to stress.",
+          "locations": ["anywhere"]
+        },
+        {
+          "id": "cell_signaling",
+          "label": "cell signaling",
+          "definition": "The process by which cells communicate with each other through chemical signals, leading to various physiological responses.",
+          "locations": ["anywhere"]
+        },
+        {
+          "id": "steatosis",
+          "label": "steatosis",
+          "definition": "The abnormal accumulation of lipids within cells, particularly in the liver, which can lead to fatty liver disease.",
+          "locations": ["liver", "intestines"]
+        },
+        {
+          "id": "fibrosis",
+          "label": "fibrosis",
+          "definition": "The formation of excess fibrous connective tissue in an organ or tissue, often as a result of chronic inflammation or injury."
+        },
+        {
+          "id": "cirrhosis",
+          "label": "cirrhosis",
+          "definition": "A late stage of scarring (fibrosis) of the liver caused by many forms of liver diseases and conditions, such as hepatitis and chronic alcoholism.",
+          "locations": ["liver"]
+        },
+        {
+          "id": "neuroinflammation",
+          "label": "neuroinflammation",
+          "definition": "An inflammatory response within the brain or spinal cord, often associated with neurodegenerative diseases.",
+          "locations": ["brain"]
+        },
+        {
+          "id": "neurodegeneration",
+          "label": "neurodegeneration",
+          "definition": "The progressive loss of structure or function of neurons, which can lead to conditions such as Alzheimer's disease and Parkinson's disease.",
+          "locations": ["brain"]
+        },
+        {
+          "id": "immune_cell_recruitment",
+          "label": "immune cell recruitment",
+          "definition": "The process by which immune cells are attracted to sites of infection or injury, playing a key role in the immune response.",
+          "locations": ["anywhere"]
+        },
+        {
+          "id": "cytokine_release",
+          "label": "cytokine release",
+          "definition": "The secretion of signaling molecules (cytokines) by immune cells, which helps to coordinate the immune response and inflammation.",
+          "locations": ["anywhere"]
+        },
+        {
+          "id": "reactive_oxygen_species_production",
+          "label": "reactive oxygen species production",
+          "definition": "The generation of reactive oxygen species (ROS) as a byproduct of cellular metabolism, which can lead to oxidative stress.",
+          "locations": ["anywhere"]
+        },
+        {
+          "id": "lipid_peroxidation",
+          "label": "lipid peroxidation",
+          "definition": "The oxidative degradation of lipids, leading to cell membrane damage and contributing to various diseases.",
+          "locations": ["anywhere"]
+        },
+        {
+          "id": "oncotic_necrosis",
+          "label": "oncotic necrosis",
+          "definition": "A form of cell death characterized by cell swelling and rupture, often resulting from severe cellular injury or stress.",
+          "locations": ["anywhere"]
+        },
+        {
+          "id": "apoptotic_necrosis",
+          "label": "apoptotic necrosis",
+          "definition": "A form of cell death that combines features of apoptosis and necrosis, often occurring in response to severe cellular stress or damage.",
+          "locations": ["anywhere"]
+        },
+        {
+          "id": "cellular_repair",
+          "label": "cellular repair",
+          "definition": "The process by which cells restore their structure and function after injury or stress, often involving DNA repair mechanisms.",
+          "locations": ["anywhere"]
+        },
+        {
+          "id": "cellular_proliferation",
+          "label": "cellular proliferation",
+          "definition": "The process by which cells divide and multiply, leading to tissue growth and repair.",
+          "locations": ["anywhere"]
+        },
+        {
+          "id": "cellular_differentiation",
+          "label": "cellular differentiation",
+          "definition": "The process by which unspecialized cells develop into specialized cell types with distinct functions.",
+          "locations": ["anywhere"]
+        },
+        {
+          "id": "cellular_stress_response",
+          "label": "cellular stress response",
+          "definition": "The cellular mechanisms activated in response to stressors, such as oxidative stress or inflammation, to maintain homeostasis.",
+          "locations": ["anywhere"]
+        },
+        {
+          "id": "cellular_homeostasis",
+          "label": "cellular homeostasis",
+          "definition": "The maintenance of stable internal conditions within a cell, including pH, ion concentrations, and metabolic processes.",
+          "locations": ["anywhere"]
+        },
+        {
+          "id": "cellular_metabolism",
+          "label": "cellular metabolism",
+          "definition": "The set of biochemical reactions that occur within a cell to maintain life, including energy production and biosynthesis.",
+          "locations": ["anywhere"]
+        },
+        {
+          "id": "steatohepatitis",
+          "label": "steatohepatitis",
+          "definition": "A condition characterized by inflammation and damage to the liver due to the accumulation of fat, often associated with metabolic disorders.",
+          "locations": ["liver"]
+        },
+        {
+          "id": "nonalcoholic_fatty_liver_disease",
+          "label": "nonalcoholic fatty liver disease",
+          "definition": "A condition characterized by the accumulation of fat in the liver without significant alcohol consumption, often associated with obesity and metabolic syndrome.",
+          "synonyms": ["NAFLD", "MASLD", "metabolic dysfunction-associated steatotic liver disease"],
+          "locations": ["liver"]
+        },
+        {
+          "id": "alcoholic_liver_disease",
+          "label": "alcoholic liver disease",
+          "definition": "A condition characterized by liver damage due to excessive alcohol consumption, leading to inflammation, fatty liver, and cirrhosis.",
+          "locations": ["liver"]
+        },
+        {
+          "id": "chronic_liver_disease",
+          "label": "chronic liver disease",
+          "definition": "A long-term condition affecting the liver, often characterized by inflammation, fibrosis, and impaired liver function.",
+          "locations": ["liver"]
+        },
+        {
+          "id": "acute_liver_failure",
+          "label": "acute liver failure",
+          "definition": "A sudden and severe loss of liver function, often leading to life-threatening complications.",
+          "locations": ["liver"]
+        },
+        {
+          "id": "liver_cancer",
+          "label": "liver cancer",
+          "definition": "A malignant tumor that originates in the liver, often associated with chronic liver disease or cirrhosis.",
+          "locations": ["liver"]
+        },
+        {
+          "id": "biliary_disease",
+          "label": "biliary disease",
+          "definition": "A condition affecting the bile ducts and gallbladder, often leading to inflammation, obstruction, or infection.",
+          "locations": ["liver", "intestines"]
+        },
+        {
+          "id": "gallstones",
+          "label": "gallstones",
+          "definition": "Solid particles that form in the gallbladder, often causing pain and digestive issues.",
+          "locations": ["liver", "intestines"]
+        },
+        {
+          "id": "cholestasis",
+          "label": "cholestasis",
+          "definition": "A condition characterized by impaired bile flow, leading to the accumulation of bile acids in the liver and bloodstream.",
+          "locations": ["liver", "intestines"]
+        },
+        {
+          "id": "bile_acid_recycling",
+          "label": "bile acid recycling",
+          "definition": "The process by which bile acids are reabsorbed in the intestines and returned to the liver for reuse, playing a key role in digestion and metabolism.",
+          "locations": ["liver", "intestines"]
+        },
+        {
+          "id": "bile_acid_homeostasis",
+          "label": "bile acid homeostasis",
+          "definition": "The regulation of bile acid levels in the body to maintain proper digestion and metabolism, involving synthesis, transport, and recycling.",
+          "locations": ["liver", "intestines"]
+        },
+        {
+          "id": "gut_microbiota_interaction",
+          "label": "gut microbiota interaction",
+          "definition": "The complex interactions between the gut microbiota and the host's immune system, metabolism, and overall health.",
+          "locations": ["intestines"]
+        },
+        {
+          "id": "intestinal_permeability",
+          "label": "intestinal permeability",
+          "definition": "The ability of the intestinal barrier to regulate the passage of substances between the gut lumen and the bloodstream, which can affect overall health.",
+          "locations": ["intestines"]
+        },
+        {
+          "id": "gut_brain_axis",
+          "label": "gut-brain axis",
+          "definition": "The bidirectional communication network between the gut and the brain, influencing mood, behavior, and overall health.",
+          "locations": ["intestines", "brain"]
+        },
+        {
+          "id": "gut_inflammation",
+          "label": "gut inflammation",
+          "definition": "An inflammatory response in the gastrointestinal tract, often associated with conditions such as inflammatory bowel disease (IBD) or infections.",
+          "locations": ["intestines"]
+        },
+        {
+          "id": "intestinal_microbiota_dysbiosis",
+          "label": "intestinal microbiota dysbiosis",
+          "definition": "An imbalance in the composition of the gut microbiota, which can lead to various health issues, including digestive disorders and metabolic diseases.",
+          "locations": ["intestines"]
+        },
+        {
+          "id": "intestinal_motility_disorder",
+          "label": "intestinal motility disorder",
+          "definition": "A condition characterized by abnormal movement of the intestines, leading to symptoms such as constipation or diarrhea.",
+          "locations": ["intestines"]
+        },
+        {
+          "id": "intestinal_infection",
+          "label": "intestinal infection",
+          "definition": "An infection of the gastrointestinal tract caused by pathogens such as bacteria, viruses, or parasites, leading to symptoms like diarrhea and abdominal pain.",
+          "locations": ["intestines"]
+        },
+        {
+          "id": "intestinal_tumor",
+          "label": "intestinal tumor",
+          "definition": "A growth or mass in the intestines that can be benign or malignant, often requiring medical intervention.",
+          "locations": ["intestines"]
+        },
+        {
+          "id": "intestinal_ischemia",
+          "label": "intestinal ischemia",
+          "definition": "A condition characterized by reduced blood flow to the intestines, leading to tissue damage and impaired function.",
+          "locations": ["intestines"]
+        },
+        {
+          "id": "intestinal_perforation",
+          "label": "intestinal perforation",
+          "definition": "A medical emergency where a hole forms in the wall of the intestine, leading to leakage of intestinal contents into the abdominal cavity.",
+          "locations": ["intestines"]
+        },
+        {
+          "id": "intestinal_obstruction",
+          "label": "intestinal obstruction",
+          "definition": "A blockage in the intestines that prevents the normal passage of contents, leading to symptoms such as abdominal pain and bloating.",
+          "locations": ["intestines"]
+        },
+        {
+          "id": "intestinal_bleeding",
+          "label": "intestinal bleeding",
+          "definition": "The loss of blood from the gastrointestinal tract, which can occur due to various conditions such as ulcers or tumors.",
+          "locations": ["intestines"]
+        },
+        {
+          "id": "intestinal_fistula",
+          "label": "intestinal fistula",
+          "definition": "An abnormal connection between the intestine and another organ or body cavity, often resulting from injury or disease.",
+          "locations": ["intestines"]
+        },
+        {
+          "id": "intestinal_diverticulitis",
+          "label": "intestinal diverticulitis",
+          "definition": "An inflammation of small pouches (diverticula) that can form in the walls of the intestines, leading to pain and digestive issues.",
+          "locations": ["intestines"]
+        },
+        {
+          "id": "intestinal_polyps",
+          "label": "intestinal polyps",
+          "definition": "Abnormal growths on the lining of the intestines that can be benign or precursors to cancer.",
+          "locations": ["intestines"]
+        },
+        {
+          "id": "intestinal_malabsorption",
+          "label": "intestinal malabsorption",
+          "definition": "A condition where the intestines do not properly absorb nutrients from food, leading to deficiencies and health issues.",
+          "synonyms": ["intestinal absorption disorder", "intestinal_absorption_disorder", "malabsorption"],
+          "locations": ["intestines"]
+        },
+        {
+          "id": "intestinal_microbiome",
+          "label": "intestinal microbiome",
+          "definition": "The complex community of microorganisms residing in the intestines, which plays a crucial role in digestion, metabolism, and immune function.",
+          "synonyms": ["intestinal flora", "intestinal_flora", "gut microbiota", "intestinal microbiota"],
+          "locations": ["intestines"]
+        },
+        {
+          "id": "intestinal_mucosal_barrier",
+          "label": "intestinal mucosal barrier",
+          "definition": "The protective layer of mucus and epithelial cells lining the intestines, which helps to prevent pathogen invasion and maintain gut health.",
+          "locations": ["intestines"]
+        },
+        {
+          "id": "intestinal_peristalsis",
+          "label": "intestinal peristalsis",
+          "definition": "The coordinated, wave-like contractions of the intestinal muscles that move food and waste through the digestive tract.",
+          "locations": ["intestines"]
+        },
+        {
+          "id": "intestinal_epithelium",
+          "label": "intestinal epithelium",
+          "definition": "The layer of cells lining the intestines that plays a key role in nutrient absorption, barrier function, and immune response.",
+          "locations": ["intestines"]
+        },
+        {
+          "id": "intestinal_immune_system",
+          "label": "intestinal immune system",
+          "definition": "The network of immune cells and tissues in the intestines that helps to protect against pathogens and maintain gut health.",
+          "locations": ["intestines"]
+        },
+        {
+          "id": "intestinal_microbial_metabolism",
+          "label": "intestinal microbial metabolism",
+          "definition": "The biochemical processes carried out by the gut microbiota that contribute to digestion, nutrient absorption, and overall health.",
+          "locations": ["intestines"]
+        },
+        {
+          "id": "intestinal_mucosal_immunity",
+          "label": "intestinal mucosal immunity",
+          "definition": "The immune response that occurs at the mucosal surfaces of the intestines, helping to protect against pathogens while maintaining tolerance to non-harmful substances.",
+          "locations": ["intestines"]
+        },
+        {
+          "id": "intestinal_mucosal_inflammation",
+          "label": "intestinal mucosal inflammation",
+          "definition": "An inflammatory response in the mucosal lining of the intestines, often associated with conditions such as inflammatory bowel disease (IBD) or infections.",
+          "locations": ["intestines"]
+        },
+        {
+          "id": "intestinal_mucosal_healing",
+          "label": "intestinal mucosal healing",
+          "definition": "The process by which the mucosal lining of the intestines repairs itself after injury or inflammation, restoring barrier function and health.",
+          "locations": ["intestines"]
+        },
+        {
+          "id": "intestinal_mucosal_barrier_function",
+          "label": "intestinal mucosal barrier function",
+          "definition": "The ability of the intestinal mucosa to prevent the passage of harmful substances while allowing the absorption of nutrients, playing a crucial role in gut health.",
+          "locations": ["intestines"]
+        },
+        {
+          "id": "intestinal_mucosal_microbiota_interaction",
+          "label": "intestinal mucosal microbiota interaction",
+          "definition": "The complex interactions between the intestinal mucosa and the gut microbiota, which influence digestion, immune response, and overall health.",
+          "locations": ["intestines"]
+        },
+        {
+          "id": "intestinal_mucosal_integrity",
+          "label": "intestinal mucosal integrity",
+          "definition": "The structural and functional health of the intestinal mucosa, which is essential for proper digestion, nutrient absorption, and immune function.",
+          "locations": ["intestines"]
+        },
+        {
+          "id": "intestinal_mucosal_dysfunction",
+          "label": "intestinal mucosal dysfunction",
+          "definition": "A condition characterized by impaired function of the intestinal mucosa, leading to issues such as malabsorption, inflammation, or increased permeability.",
+          "locations": ["intestines"]
+        },
+        {
+          "id": "oxidative_stress_in_the_lungs",
+          "label": "oxidative stress in the lungs",
+          "definition": "An imbalance between the production of reactive oxygen species (ROS) and the body's ability to detoxify them, leading to cellular damage in the lungs.",
+          "locations": ["lungs"]
+        },
+        {
+          "id": "lung_inflammation",
+          "label": "lung inflammation",
+          "definition": "An inflammatory response in the lungs, often caused by infection, allergens, or irritants, leading to symptoms such as coughing and difficulty breathing.",
+          "locations": ["lungs"]
+        },
+        {
+          "id": "lung_cellular_damage",
+          "label": "lung cellular damage",
+          "definition": "Harm to lung cells that impairs their function or structure, often resulting from oxidative stress or inflammation.",
+          "locations": ["lungs"]
+        },
+        {
+          "id": "lung_metabolic_disorder",
+          "label": "lung metabolic disorder",
+          "definition": "A condition that disrupts normal metabolic processes in the lungs, leading to impaired function and health issues.",
+          "locations": ["lungs"]
+        },
+        {
+          "id": "lung_immune_response",
+          "label": "lung immune response",
+          "definition": "The body's defense mechanism in the lungs against pathogens, characterized by the activation of immune cells and the production of antibodies.",
+          "locations": ["lungs"]
+        },
+        {
+          "id": "lung_hormonal_regulation",
+          "label": "lung hormonal regulation",
+          "definition": "The process by which hormones control various physiological functions in the lungs, including inflammation and immune response.",
+          "locations": ["lungs"]
+        },
+        {
+          "id": "gas_exchange",
+          "label": "gas exchange",
+          "definition": "The process by which oxygen is absorbed into the bloodstream and carbon dioxide is expelled from the body, primarily occurring in the alveoli of the lungs.",
+          "locations": ["lungs"]
+        },
+        {
+          "id": "hypoxia",
+          "label": "hypoxia",
+          "definition": "A condition in which there is a deficiency of oxygen in the tissues, often leading to impaired cellular function and metabolism.",
+          "locations": ["lungs", "anywhere"]
+        },
+        {
+          "id": "hypercapnia",
+          "label": "hypercapnia",
+          "definition": "An excess of carbon dioxide in the bloodstream, often resulting from impaired gas exchange in the lungs.",
+          "locations": ["lungs", "anywhere"]
+        },
+        {
+          "id": "cellular_respiration",
+          "label": "cellular respiration",
+          "definition": "The biochemical process by which cells convert glucose and oxygen into energy (ATP), carbon dioxide, and water, primarily occurring in the mitochondria.",
+          "locations": ["lungs", "anywhere"]
+        },
+        {
+          "id": "lung_infection",
+          "label": "lung infection",
+          "definition": "An infection of the lungs caused by pathogens such as bacteria, viruses, or fungi, leading to symptoms like cough, fever, and difficulty breathing.",
+          "locations": ["lungs"]
+        },
+        {
+          "id": "lung_cancer",
+          "label": "lung cancer",
+          "definition": "A malignant tumor that originates in the lungs, often associated with smoking or exposure to environmental toxins.",
+          "locations": ["lungs"]
+        },
+        {
+          "id": "chronic_obstructive_pulmonary_disease",
+          "label": "chronic obstructive pulmonary disease",
+          "definition": "A progressive lung disease characterized by airflow obstruction, leading to difficulty breathing and reduced lung function.",
+          "locations": ["lungs"]
+        },
+        {
+          "id": "asthma",
+          "label": "asthma",
+          "definition": "A chronic inflammatory disease of the airways that causes wheezing, shortness of breath, chest tightness, and coughing.",
+          "locations": ["lungs"]
+        },
+        {
+          "id": "pneumonia",
+          "label": "pneumonia",
+          "definition": "An infection that inflames the air sacs in one or both lungs, which may fill with fluid or pus, leading to cough, fever, and difficulty breathing.",
+          "synonyms": ["lung pneumonia", "lung_pneumonia"],
+          "locations": ["lungs"]
+        },
+        {
+          "id": "pulmonary_fibrosis",
+          "label": "pulmonary fibrosis",
+          "definition": "A lung disease that occurs when lung tissue becomes damaged and scarred, leading to progressive difficulty in breathing.",
+          "synonyms": ["lung fibrosis", "lung_fibrosis"],
+          "locations": ["lungs"]
+        },
+        {
+          "id": "pulmonary_embolism",
+          "label": "pulmonary embolism",
+          "definition": "A blockage in one of the pulmonary arteries in the lungs, usually caused by blood clots that travel to the lungs from the legs or other parts of the body.",
+          "synonyms": ["lung embolism", "lung_embolism"],
+          "locations": ["lungs"]
+        },
+        {
+          "id": "interstitial_lung_disease",
+          "label": "interstitial lung disease",
+          "definition": "A group of disorders that cause scarring (fibrosis) of the lungs, leading to progressive lung stiffness and difficulty breathing.",
+          "locations": ["lungs"]
+        },
+        {
+          "id": "pleural_effusion",
+          "label": "pleural effusion",
+          "definition": "An accumulation of excess fluid in the pleural space surrounding the lungs, which can cause difficulty breathing and chest pain.",
+          "locations": ["lungs"]
+        },
+        {
+          "id": "pneumothorax",
+          "label": "pneumothorax",
+          "definition": "A condition where air leaks into the pleural space, causing the lung to collapse and leading to sudden chest pain and shortness of breath.",
+          "locations": ["lungs"]
+        },
+        {
+          "id": "retinoic_acid",
+          "label": "retinoic acid",
+          "definition": "Retinoic acid is a metabolite of vitamin A that plays a role in cell differentiation and development."
+        },
+        {
+          "id": "bile_salts",
+          "label": "bile salts",
+          "definition": "Bile salts are a group of molecules derived from cholesterol that are produced in the liver and play a crucial role in the digestion and absorption of fats."
+        },
+        {
+          "id": "wnt7a",
+          "label": "WNT7A",
+          "definition": "WNT7A (Wnt family member 7A) is a member of the WNT family of signaling proteins that play a role in cell-to-cell communication and development.",
+          "synonyms": ["Wnt-7a", "wnt-7a"]
+        },
+        {
+          "id": "fgf8",
+          "label": "FGF8",
+          "definition": "FGF8 (fibroblast growth factor 8) is a member of the fibroblast growth factor family that is involved in embryonic development and tissue repair.",
+          "synonyms": ["FGF-8", "fgf-8"]
+        },
+        {
+          "id": "fgf10",
+          "label": "FGF10",
+          "definition": "FGF10 (fibroblast growth factor 10) is a member of the fibroblast growth factor family that is involved in embryonic development and tissue repair.",
+          "synonyms": ["FGF-10", "fgf-10"]
+        },
+        {
+          "id": "shh",
+          "label": "SHH",
+          "definition": "SHH (sonic hedgehog) is a signaling molecule that plays a crucial role in embryonic development, including the patterning of limbs and organs.",
+          "synonyms": ["sonic hedgehog", "Shh"]
+        },
+        {
+          "id": "fgf4",
+          "label": "FGF4",
+          "definition": "FGF4 (fibroblast growth factor 4) is a member of the fibroblast growth factor family that is involved in embryonic development and tissue repair.",
+          "synonyms": ["FGF-4", "fgf-4"]
+        },
+        {
+          "id": "lmx1b",
+          "label": "LMX1B",
+          "definition": "LMX1B (LIM homeobox transcription factor 1 beta) is a transcription factor that plays a role in the development of the nervous system and in dorsal limb patterning.",
+          "synonyms": ["Lmx-1b", "lmx-1b", "Lmx1b"]
+        },
+        {
+          "id": "en1",
+          "label": "EN1",
+          "definition": "EN1 (engrailed homeobox 1) is a homeobox transcription factor expressed in the ventral ectoderm of the developing limb bud, where it is needed for dorsal-ventral limb patterning.",
+          "synonyms": ["engrailed-1", "En-1", "En1"]
+        },
+        {
+          "id": "rfng",
+          "label": "RFNG",
+          "definition": "Radical fringe (RFNG) is a glycosyltransferase that modifies Notch signaling. It is expressed in the dorsal ectoderm of the early limb bud and helps position the apical ectodermal ridge (AER).",
+          "synonyms": ["radical fringe", "radical_fringe", "R-fng"]
+        },
+        {
+          "id": "ser_2",
+          "label": "Ser-2",
+          "definition": "ser-2 is a G protein-coupled receptor that is involved in the regulation of various physiological processes, including neurotransmission and muscle contraction.",
+          "synonyms": ["ser-2"]
+        },
+        {
+          "id": "sall4",
+          "label": "SALL4",
+          "definition": "SALL4 (spalt like transcription factor 4) is a transcription factor that plays a crucial role in embryonic development, including the regulation of stem cell pluripotency and differentiation.",
+          "synonyms": ["Sall4"]
+        },
+        {
+          "id": "pitx1",
+          "label": "PITX1",
+          "definition": "PITX1 (paired like homeodomain 1) is a transcription factor critical for vertebrate development, specifically directing the formation of hindlimbs, craniofacial structures, and the pituitary gland.",
+          "synonyms": ["Pitx1"]
+        },
+        {
+          "id": "tbx4",
+          "label": "TBX4",
+          "definition": "TBX4 (T-box transcription factor 4) is a transcription factor that plays a crucial role in the development of the hindlimb and is involved in the regulation of gene expression during embryonic development.",
+          "synonyms": ["Tbx4"]
+        },
+        {
+          "id": "tbx5",
+          "label": "TBX5",
+          "definition": "TBX5 (T-box transcription factor 5) is a transcription factor that plays a crucial role in the development of the forelimb and is involved in the regulation of gene expression during embryonic development.",
+          "synonyms": ["Tbx5"]
+        },
+        {
+          "id": "hoxb8",
+          "label": "HOXB8",
+          "definition": "HOXB8 (homeobox B8) is a member of the Hox gene family that plays a crucial role in the development of limbs and other body structures during embryogenesis.",
+          "synonyms": ["Hoxb8"]
+        },
+        {
+          "id": "hox_genes",
+          "label": "Hox genes",
+          "definition": "Hox genes are a family of transcription factors that play crucial roles in the development of limbs and other body structures during embryogenesis. A family, so it is written out rather than given one gene symbol.",
+          "synonyms": ["hox genes", "HOX genes"]
+        }
+      ]
+    },
+    {
+      "category": "relationship types",
+      "terms": [
+        {
+          "id": "inhibits",
+          "label": "inhibits",
+          "definition": "Decreases or blocks the functional activity of a downstream protein, pathway, receptor, enzyme, or transcription factor.",
+          "direction": "-"
+        },
+        {
+          "id": "activates",
+          "label": "activates",
+          "definition": "Increases the functional activity of a downstream protein, pathway, receptor, enzyme, or transcription factor.",
+          "direction": "+"
+        },
+        {
+          "id": "increases",
+          "label": "increases",
+          "definition": "Describes a general increase in the level or concentration of a molecule, such as a protein, metabolite, or signaling molecule.",
+          "direction": "+"
+        },
+        {
+          "id": "decreases",
+          "label": "decreases",
+          "definition": "Describes a general decrease in the level or concentration of a molecule, such as a protein, metabolite, or signaling molecule.",
+          "direction": "-"
+        },
+        {
+          "id": "unknown",
+          "label": "unknown",
+          "definition": "Describes a relationship where the specific interaction or effect is not known or has not been characterized.",
+          "direction": "<>"
+        },
+        {
+          "id": "upregulates",
+          "label": "upregulates",
+          "definition": "Increases the expression of a gene or protein, leading to higher levels of that gene or protein in the cell.",
+          "direction": "+"
+        },
+        {
+          "id": "downregulates",
+          "label": "downregulates",
+          "definition": "Decreases the expression of a gene or protein, leading to lower levels of that gene or protein in the cell.",
+          "direction": "-"
+        },
+        {
+          "id": "binds_to",
+          "label": "binds to",
+          "definition": "Describes a physical interaction between two molecules, such as a protein binding to a receptor or enzyme.",
+          "direction": "<>"
+        },
+        {
+          "id": "translocates_to",
+          "label": "translocates to",
+          "definition": "Describes the movement of a molecule from one location to another within a cell or organism.",
+          "direction": "<>"
+        },
+        {
+          "id": "interacts_with",
+          "label": "interacts with",
+          "definition": "Describes a general interaction between two molecules, which may include binding, activation, inhibition, or other forms of interaction.",
+          "direction": "<>"
+        },
+        {
+          "id": "modulates",
+          "label": "modulates",
+          "definition": "Describes a change in the activity or function of a molecule, which may involve activation, inhibition, or other forms of regulation.",
+          "direction": "<>"
+        },
+        {
+          "id": "transforms_into",
+          "label": "transforms into",
+          "definition": "Describes a change in the state or form of a molecule, such as a precursor molecule being converted into an active form.",
+          "direction": "<>"
+        },
+        {
+          "id": "stabilizes_mrna",
+          "label": "stabilizes mRNA",
+          "definition": "Describes a process that increases the stability of messenger RNA (mRNA), preventing its degradation and allowing for longer translation into protein.",
+          "direction": "+"
+        },
+        {
+          "id": "degrades_mrna",
+          "label": "degrades mRNA",
+          "definition": "Describes a process that leads to the breakdown of messenger RNA (mRNA), resulting in decreased translation into protein.",
+          "direction": "-"
+        },
+        {
+          "id": "transcribes",
+          "label": "transcribes",
+          "definition": "Describes the process of synthesizing RNA from a DNA template, leading to the production of mRNA.",
+          "direction": "+"
+        },
+        {
+          "id": "enhances_translation",
+          "label": "enhances translation",
+          "definition": "Describes a process that increases the efficiency or rate of translation of mRNA into protein.",
+          "direction": "+"
+        },
+        {
+          "id": "suppresses_translation",
+          "label": "suppresses translation",
+          "definition": "Describes a process that inhibits the translation of mRNA into protein, leading to decreased protein synthesis.",
+          "direction": "-"
+        },
+        {
+          "id": "phosphorylates",
+          "label": "phosphorylates",
+          "definition": "Describes the addition of a phosphate group to a molecule, often a protein, which can alter its activity or function.",
+          "direction": "+"
+        },
+        {
+          "id": "dephosphorylates",
+          "label": "dephosphorylates",
+          "definition": "Describes the removal of a phosphate group from a molecule, often a protein, which can alter its activity or function.",
+          "direction": "-"
+        },
+        {
+          "id": "acetylates",
+          "label": "acetylates",
+          "definition": "Describes the addition of an acetyl group to a molecule, often a protein, which can alter its activity or function.",
+          "direction": "+"
+        },
+        {
+          "id": "deacetylates",
+          "label": "deacetylates",
+          "definition": "Describes the removal of an acetyl group from a molecule, often a protein, which can alter its activity or function.",
+          "direction": "-"
+        },
+        {
+          "id": "methylates",
+          "label": "methylates",
+          "definition": "Describes the addition of a methyl group to a molecule, often a protein or DNA, which can alter its activity or function.",
+          "direction": "-"
+        },
+        {
+          "id": "demethylates",
+          "label": "demethylates",
+          "definition": "Describes the removal of a methyl group from a molecule, often a protein or DNA, which can alter its activity or function.",
+          "direction": "+"
+        },
+        {
+          "id": "ubiquitinates",
+          "label": "ubiquitinates",
+          "definition": "Describes the addition of ubiquitin to a protein, which can target it for degradation or alter its function.",
+          "direction": "-"
+        },
+        {
+          "id": "deubiquitinates",
+          "label": "deubiquitinates",
+          "definition": "Describes the removal of ubiquitin from a protein, which can prevent its degradation and alter its function.",
+          "direction": "+"
+        },
+        {
+          "id": "glycosylates",
+          "label": "glycosylates",
+          "definition": "Describes the addition of a carbohydrate group to a molecule, often a protein, which can alter its activity or function.",
+          "direction": "<>"
+        },
+        {
+          "id": "deglycosylates",
+          "label": "deglycosylates",
+          "definition": "Describes the removal of a carbohydrate group from a molecule, often a protein, which can alter its activity or function.",
+          "direction": "<>"
+        },
+        {
+          "id": "sulfates",
+          "label": "sulfates",
+          "definition": "Describes the addition of a sulfate group to a molecule, often a protein, which can alter its activity or function.",
+          "direction": "<>"
+        },
+        {
+          "id": "desulfates",
+          "label": "desulfates",
+          "definition": "Describes the removal of a sulfate group from a molecule, often a protein, which can alter its activity or function.",
+          "direction": "<>"
+        },
+        {
+          "id": "palmitoylates",
+          "label": "palmitoylates",
+          "definition": "Describes the addition of a palmitoyl group to a molecule, often a protein, which can alter its activity or function.",
+          "direction": "<>"
+        },
+        {
+          "id": "depalmitoylates",
+          "label": "depalmitoylates",
+          "definition": "Describes the removal of a palmitoyl group from a molecule, often a protein, which can alter its activity or function.",
+          "direction": "<>"
+        },
+        {
+          "id": "myristoylates",
+          "label": "myristoylates",
+          "definition": "Describes the addition of a myristoyl group to a molecule, often a protein, which can alter its activity or function.",
+          "direction": "<>"
+        },
+        {
+          "id": "demyristoylates",
+          "label": "demyristoylates",
+          "definition": "Describes the removal of a myristoyl group from a molecule, often a protein, which can alter its activity or function.",
+          "direction": "<>"
+        },
+        {
+          "id": "prenylates",
+          "label": "prenylates",
+          "definition": "Describes the addition of a prenyl group to a molecule, often a protein, which can alter its activity or function.",
+          "direction": "<>"
+        },
+        {
+          "id": "deprenylates",
+          "label": "deprenylates",
+          "definition": "Describes the removal of a prenyl group from a molecule, often a protein, which can alter its activity or function.",
+          "direction": "<>"
+        },
+        {
+          "id": "transports",
+          "label": "transports",
+          "definition": "Describes the movement of a molecule from one location to another within a cell or organism, often involving transport proteins or vesicles.",
+          "direction": "<>"
+        },
+        {
+          "id": "secretes",
+          "label": "secretes",
+          "definition": "Describes the process by which a cell or gland releases a substance, such as a hormone or enzyme, into the extracellular space or bloodstream.",
+          "direction": "<>"
+        },
+        {
+          "id": "absorbs",
+          "label": "absorbs",
+          "definition": "Describes the process by which a cell or tissue takes up a substance, such as a nutrient or drug, from the extracellular space or bloodstream.",
+          "direction": "<>"
+        },
+        {
+          "id": "excretes",
+          "label": "excretes",
+          "definition": "Describes the process by which a cell or organism eliminates waste products or substances from its body.",
+          "direction": "<>"
+        },
+        {
+          "id": "synthesizes",
+          "label": "synthesizes",
+          "definition": "Describes the process of creating a complex molecule from simpler precursors, often involving enzymatic reactions.",
+          "direction": "+"
+        },
+        {
+          "id": "degrades",
+          "label": "degrades",
+          "definition": "Describes the breakdown of a complex molecule into simpler components, often involving enzymatic reactions.",
+          "direction": "-"
+        },
+        {
+          "id": "forms_complexes_with",
+          "label": "forms complexes with",
+          "definition": "Describes the interaction between two or more molecules to form a stable complex, which may be necessary for their function.",
+          "direction": "<>"
+        },
+        {
+          "id": "dissociates_from",
+          "label": "dissociates from",
+          "definition": "Describes the separation of a molecule from a complex or another molecule, often leading to a change in function or activity.",
+          "direction": "<>"
+        },
+        {
+          "id": "transports_across_membrane",
+          "label": "transports across membrane",
+          "definition": "Describes the movement of a molecule across a biological membrane, often involving transport proteins or channels.",
+          "direction": "<>"
+        },
+        {
+          "id": "promotes_protein_degradation",
+          "label": "promotes protein degradation",
+          "definition": "Describes a process that enhances the breakdown of proteins into smaller peptides or amino acids, often involving proteolytic enzymes.",
+          "direction": "-"
+        },
+        {
+          "id": "inhibits_protein_degradation",
+          "label": "inhibits protein degradation",
+          "definition": "Describes a process that prevents or reduces the breakdown of proteins into smaller peptides or amino acids, often involving proteolytic enzymes.",
+          "direction": "+"
+        },
+        {
+          "id": "blocks_neurotransmitter_release",
+          "label": "blocks neurotransmitter release",
+          "definition": "Describes a process that prevents the release of neurotransmitters from nerve cells, which can affect communication between neurons.",
+          "direction": "-"
+        },
+        {
+          "id": "stimulates_neurotransmitter_release",
+          "label": "stimulates neurotransmitter release",
+          "definition": "Describes a process that promotes the release of neurotransmitters from nerve cells, enhancing communication between neurons.",
+          "direction": "+"
+        },
+        {
+          "id": "inhibits_neurotransmitter_reuptake",
+          "label": "inhibits neurotransmitter reuptake",
+          "definition": "Describes a process that prevents the reabsorption of neurotransmitters back into the nerve cell, prolonging their action in the synaptic cleft.",
+          "direction": "+"
+        },
+        {
+          "id": "stimulates_neurotransmitter_reuptake",
+          "label": "stimulates neurotransmitter reuptake",
+          "definition": "Describes a process that promotes the reabsorption of neurotransmitters back into the nerve cell, reducing their action in the synaptic cleft.",
+          "direction": "-"
+        },
+        {
+          "id": "causes",
+          "label": "causes",
+          "definition": "Describes a relationship where one event or condition leads to the occurrence of another, often used in the context of disease or physiological processes.",
+          "direction": "+"
+        }
+      ]
+    },
+    {
+      "category": "locations",
+      "terms": [
+        {
+          "id": "liver",
+          "label": "liver",
+          "definition": "The liver is a vital organ that plays a key role in metabolism, detoxification, and synthesis of proteins."
+        },
+        {
+          "id": "lungs",
+          "label": "lungs",
+          "definition": "The lungs are the primary organs of the respiratory system, responsible for gas exchange."
+        },
+        {
+          "id": "kidneys",
+          "label": "kidneys",
+          "definition": "The kidneys are organs that filter blood, remove waste, and regulate fluid balance."
+        },
+        {
+          "id": "heart",
+          "label": "heart",
+          "definition": "The heart is a muscular organ that pumps blood through the circulatory system."
+        },
+        {
+          "id": "brain",
+          "label": "brain",
+          "definition": "The brain is the central organ of the nervous system, responsible for processing sensory information and coordinating responses."
+        },
+        {
+          "id": "intestines",
+          "label": "intestines",
+          "definition": "The intestines are part of the digestive system, responsible for nutrient absorption and waste elimination."
+        },
+        {
+          "id": "skin",
+          "label": "skin",
+          "definition": "The skin is the body's largest organ, providing a barrier against environmental hazards."
+        },
+        {
+          "id": "muscles",
+          "label": "muscles",
+          "definition": "Muscles are tissues that contract to produce movement in the body."
+        },
+        {
+          "id": "bones",
+          "label": "bones",
+          "definition": "Bones are rigid organs that form the skeleton, providing structure and protection to the body."
+        },
+        {
+          "id": "blood",
+          "label": "blood",
+          "definition": "Blood is a fluid connective tissue that transports nutrients, gases, and waste products throughout the body."
+        },
+        {
+          "id": "nerves",
+          "label": "nerves",
+          "definition": "Nerves are bundles of fibers that transmit signals between the brain and other parts of the body."
+        },
+        {
+          "id": "anywhere",
+          "label": "anywhere",
+          "definition": "A non-specific location that can refer to any part of the body."
+        },
+        {
+          "id": "spleen",
+          "label": "spleen",
+          "definition": "The spleen is an organ involved in filtering blood and immune response."
+        },
+        {
+          "id": "pancreas",
+          "label": "pancreas",
+          "definition": "The pancreas is an organ that produces digestive enzymes and hormones, including insulin."
+        },
+        {
+          "id": "gallbladder",
+          "label": "gallbladder",
+          "definition": "The gallbladder is a small, pear-shaped organ that stores and concentrates bile produced by the liver.",
+          "synonyms": ["gall bladder", "gall_bladder"]
+        },
+        {
+          "id": "stomach",
+          "label": "stomach",
+          "definition": "The stomach is a muscular organ that breaks down food using acids and enzymes."
+        },
+        {
+          "id": "bladder",
+          "label": "bladder",
+          "definition": "The bladder is a hollow organ that stores urine before it is excreted."
+        },
+        {
+          "id": "thymus",
+          "label": "thymus",
+          "definition": "The thymus is an organ involved in the development of the immune system."
+        },
+        {
+          "id": "testes",
+          "label": "testes",
+          "definition": "The testes are male reproductive organs that produce sperm and hormones."
+        },
+        {
+          "id": "ovaries",
+          "label": "ovaries",
+          "definition": "The ovaries are female reproductive organs that produce eggs and hormones."
+        },
+        {
+          "id": "prostate",
+          "label": "prostate",
+          "definition": "The prostate is an organ that produces seminal fluid and is involved in reproductive function."
+        },
+        {
+          "id": "uterus",
+          "label": "uterus",
+          "definition": "The uterus is an organ involved in reproductive function, including menstruation and pregnancy. It houses the developing conceptus."
+        },
+        {
+          "id": "placenta",
+          "label": "placenta",
+          "definition": "The placenta is an organ that develops during pregnancy to provide nutrients and oxygen to the fetus."
+        },
+        {
+          "id": "adipose_tissue",
+          "label": "adipose tissue",
+          "definition": "Adipose tissue is a type of connective tissue that stores fat and regulates energy balance."
+        },
+        {
+          "id": "lymphatic_system",
+          "label": "lymphatic system",
+          "definition": "The lymphatic system is a network of vessels and nodes that play a role in immune function and fluid balance."
+        },
+        {
+          "id": "immune_system",
+          "label": "immune system",
+          "definition": "The immune system is the body's defense against infectious organisms and other invaders."
+        },
+        {
+          "id": "endocrine_system",
+          "label": "endocrine system",
+          "definition": "The endocrine system is a network of glands that produce and release hormones to regulate various bodily functions."
+        },
+        {
+          "id": "nervous_system",
+          "label": "nervous system",
+          "definition": "The nervous system is a complex network of neurons and cells that transmit signals throughout the body."
+        },
+        {
+          "id": "musculoskeletal_system",
+          "label": "musculoskeletal system",
+          "definition": "The musculoskeletal system is the organ system that enables humans and other animals to move using the muscular and skeletal systems."
+        },
+        {
+          "id": "reproductive_system",
+          "label": "reproductive system",
+          "definition": "The reproductive system is the organ system involved in producing offspring."
+        },
+        {
+          "id": "digestive_system",
+          "label": "digestive system",
+          "definition": "The digestive system is the organ system responsible for breaking down food and absorbing nutrients."
+        },
+        {
+          "id": "respiratory_system",
+          "label": "respiratory system",
+          "definition": "The respiratory system is the organ system responsible for gas exchange, including breathing."
+        },
+        {
+          "id": "circulatory_system",
+          "label": "circulatory system",
+          "definition": "The circulatory system is the organ system that transports blood, nutrients, gases, and waste products throughout the body."
+        },
+        {
+          "id": "integumentary_system",
+          "label": "integumentary system",
+          "definition": "The integumentary system is the organ system that protects the body from damage, including skin, hair, and nails."
+        },
+        {
+          "id": "excretory_system",
+          "label": "excretory system",
+          "definition": "The excretory system is the organ system responsible for removing waste products from the body."
+        },
+        {
+          "id": "apical_ectodermal_ridge",
+          "label": "apical ectodermal ridge",
+          "definition": "The apical ectodermal ridge is a thickened band of ectoderm along the distal tip of the developing vertebrate limb bud that directs limb outgrowth.",
+          "synonyms": ["AER", "apical epidermal ridge", "apical_epidermal_ridge_aer"]
+        },
+        {
+          "id": "bile",
+          "label": "bile",
+          "definition": "Bile is a digestive fluid produced by the liver that aids in the digestion and absorption of fats in the small intestine."
+        },
+        {
+          "id": "bile_canaliculi",
+          "label": "bile canaliculi",
+          "definition": "Bile canaliculi are microscopic channels in the liver that transport bile from hepatocytes to the bile ducts.",
+          "synonyms": ["bile caniculi", "bile_caniculi"]
+        },
+        {
+          "id": "bile_ducts",
+          "label": "bile ducts",
+          "definition": "Bile ducts are a series of tubes that carry bile from the liver and gallbladder to the small intestine."
+        },
+        {
+          "id": "cardiac_mesoderm",
+          "label": "cardiac mesoderm",
+          "definition": "Cardiac mesoderm is a specific region of the mesoderm layer in the developing embryo that gives rise to the heart and associated structures."
+        },
+        {
+          "id": "central_vein",
+          "label": "central vein",
+          "definition": "The central vein is a blood vessel located in the center of a liver lobule that collects blood from the hepatic sinusoids and drains it into the hepatic veins."
+        },
+        {
+          "id": "cholangiocytes",
+          "label": "cholangiocytes",
+          "synonyms": ["cholangiocyte"],
+          "definition": "Cholangiocytes are epithelial cells that line the bile ducts in the liver and are involved in bile secretion and transport."
+        },
+        {
+          "id": "cystic_duct",
+          "label": "cystic duct",
+          "definition": "The cystic duct is a short tube that connects the gallbladder to the common bile duct, facilitating the flow of bile from the gallbladder to the small intestine."
+        },
+        {
+          "id": "extrahepatic_bile_duct",
+          "label": "extrahepatic bile duct",
+          "definition": "The extrahepatic bile duct is a tube that carries bile from the liver and gallbladder to the duodenum, the first part of the small intestine.",
+          "synonyms": ["EHBD", "extrahepatic_bile_duct(ehbd)"]
+        },
+        {
+          "id": "hepatocytes",
+          "label": "hepatocytes",
+          "definition": "Hepatocytes are the main functional cells of the liver, responsible for a wide range of metabolic, detoxification, and synthetic activities."
+        },
+        {
+          "id": "hepatic_ducts",
+          "label": "hepatic ducts",
+          "definition": "Hepatic ducts are a network of tubes that carry bile from the liver to the common bile duct."
+        },
+        {
+          "id": "hepatic_sinusoids",
+          "label": "hepatic sinusoids",
+          "definition": "Hepatic sinusoids are specialized blood vessels in the liver that allow for the exchange of substances between the blood and hepatocytes.",
+          "synonyms": ["sinusoid", "liver sinusoids"]
+        },
+        {
+          "id": "intrahepatic_bile_ducts",
+          "label": "intrahepatic bile ducts",
+          "definition": "Intrahepatic bile ducts are a network of small ducts within the liver that collect bile from hepatocytes and transport it to the hepatic ducts.",
+          "synonyms": ["IHBD", "intrahepatic_bile_ducts(ihbd)"]
+        },
+        {
+          "id": "liver_buds",
+          "label": "liver buds",
+          "definition": "Liver buds are early structures in embryonic development that give rise to the liver and associated structures."
+        },
+        {
+          "id": "portal_vein",
+          "label": "portal vein",
+          "definition": "The portal vein is a major blood vessel that carries nutrient-rich blood from the gastrointestinal tract and spleen to the liver for processing."
+        },
+        {
+          "id": "right_hepatic_duct",
+          "label": "right hepatic duct",
+          "definition": "The right hepatic duct is a tube that carries bile from the right lobe of the liver to the common hepatic duct."
+        },
+        {
+          "id": "falciform_ligament",
+          "label": "falciform ligament",
+          "definition": "The falciform ligament is a thin, sickle-shaped fold of peritoneum that connects the liver to the anterior abdominal wall."
+        },
+        {
+          "id": "hepatocyte_cord",
+          "label": "hepatocyte cord",
+          "definition": "Hepatocyte cords are groups of hepatocytes arranged in linear arrays within the liver parenchyma."
+        },
+        {
+          "id": "kupffer_cells",
+          "label": "Kupffer cells",
+          "definition": "Kupffer cells are specialized macrophages located in the liver that play a role in immune defense and the removal of pathogens and cellular debris."
+        },
+        {
+          "id": "lesser_omentum",
+          "label": "lesser omentum",
+          "definition": "The lesser omentum is a double layer of peritoneum that extends from the liver to the stomach and duodenum, containing blood vessels, lymphatics, and nerves."
+        },
+        {
+          "id": "liver_primordium",
+          "label": "liver primordium",
+          "definition": "The liver primordium is an early embryonic structure from which the liver develops."
+        },
+        {
+          "id": "liver_lobule",
+          "label": "liver lobule",
+          "definition": "A liver lobule is a functional unit of the liver composed of hepatocytes arranged around a central vein.",
+          "synonyms": ["lobule", "hepatic lobule"]
+        },
+        {
+          "id": "portal_triads",
+          "label": "portal triads",
+          "definition": "Portal triads are structures in the liver that consist of a branch of the hepatic artery, a branch of the portal vein, and a bile duct."
+        },
+        {
+          "id": "septum_transversum",
+          "label": "septum transversum",
+          "definition": "The septum transversum is a structure in the developing embryo that contributes to the formation of the diaphragm."
+        },
+        {
+          "id": "septum_transversum_mesenchyme",
+          "label": "septum transversum mesenchyme",
+          "definition": "The septum transversum mesenchyme is the mesenchymal tissue of the septum transversum, which contributes to the diaphragm and to the developing liver in the embryo.",
+          "synonyms": ["STM", "septum_transversum_mesenchyme(stm)"]
+        },
+        {
+          "id": "hepatic_stellate_cells",
+          "label": "hepatic stellate cells",
+          "definition": "Hepatic stellate cells are specialized cells in the liver that store vitamin A and play a role in liver fibrosis.",
+          "synonyms": ["stellate cells", "stellate_cells"]
+        }
+      ]
+    }
+  ]
+}

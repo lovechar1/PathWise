@@ -22,7 +22,7 @@ jobs:
 
       - name: Add the current ontology to the workspace
         run: |
-          if [ ! -f pathway-extraction-workspace/pathwise_ontology.json ]; then
+          if ! ls pathway-extraction-workspace/pathwise_ontology*.json >/dev/null 2>&1; then
             cp pathwise_ontology.json pathway-extraction-workspace/
           fi
 

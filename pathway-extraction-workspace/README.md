@@ -5,7 +5,7 @@ Run the pathway-extraction skill from this folder, and only from this folder. It
 1. Open **this folder** in Claude Code (not a folder around it).
 2. Put your PDFs in `papers`.
 3. Start a new chat and ask, for example: "Extract the pathway for perfluorooctanoic acid–induced liver toxicity from the PDFs in papers."
-4. Answer its questions. The gene and protein name check runs on its own at the end. The run is finished when it says complete.
+4. Answer its questions. When it asks for the ontology file, give `pathwise_ontology_CAL.json` (the current cleaned ontology, in this folder). The gene and protein name check runs on its own at the end. The run is finished when it says complete.
 
 If a run stops partway, open a new chat here and type "finish the PathWise run".
 
