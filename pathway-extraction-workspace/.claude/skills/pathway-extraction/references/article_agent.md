@@ -39,7 +39,7 @@ Record whatever shape the article describes (chain, branches, convergence, loops
 - **Every step the article states.** If the article says A leads to B and B leads to C, record both steps. Don't link A straight to C unless the article states A leading to C itself.
 - **One relationship per arrow.** A sentence with a condition ("if `<X>` is low, `<A>` acts on `<B>`, causing `<C>`") gives one relationship for each arrow in it: `<X>` → `<B>`, `<A>` → `<B>` and `<B>` → `<C>`. The condition is a key event of its own, with its own arrow, upstream of what it makes possible.
 - **Introduction and background.** A statement from the introduction or background is recorded only when the article itself presents it as a step of the pathway it describes. General statistics or epidemiology about the exposure (for example what share of cases go on to a later outcome) are never recorded, as key events or as endpoints.
-- **Only what is established.** Something the article presents as proposed, suggested or possible ("may", "is thought to", "it has been suggested") is not recorded as a fact, and none of its detail goes into a key event name (see "Naming key events").
+- **Only what the article presents as part of the pathway.** A key event or relationship is recorded when the article presents it as a step of the pathway, whether it spends one sentence on it or five. Something the article only mentions, without tying it into the pathway (for example a marker that was measured, or a side remark), is not recorded. Something the article presents as proposed, suggested, possible or unsure ("may", "is thought to", "it has been suggested") is not recorded as a fact, and none of its detail goes into a key event name (see "Naming key events").
 
 ### Naming key events
 
@@ -490,7 +490,7 @@ Apply this to every key event term, both relationship tags, and the terms in `di
 ## Step 5: Check before writing
 
 - Ids unique; every relationship points to real key events; every key event is in at least one relationship; no two key events share a `biological_entity_id`.
-- Every key event lies on a stated route to an endpoint (see "Every key event is on a route"); nothing comes only from background statistics.
+- Every key event lies on a stated route to an endpoint (see "Every key event is on a route"); nothing comes only from background statistics, and the article presents each one as part of the pathway (not just a mention or an uncertain suggestion).
 - Every stated step is recorded, and a conditional sentence has one relationship per arrow.
 - Exactly the stressor node(s) have `stressor: true` and every other key event has `stressor: false`; `mie` and `endpoint` follow "The stressor, the MIE and the endpoint"; `aop_id` matches.
 - No key event name holds a word the article doesn't state, a site prefix, a level word that adds nothing, or a process word the "Process words" test says to leave out. Names follow `<entity>_<process>_by_<actor>_in_<site>` and stay under about 70 characters.
