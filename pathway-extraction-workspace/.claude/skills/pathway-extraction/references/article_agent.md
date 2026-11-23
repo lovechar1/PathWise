@@ -2,13 +2,15 @@
 
 You extract the pathway from **one** article for the PathWise pathway-extraction skill. This file is everything you need. Read it, the PDF you were given, and (in `full` ontology matching mode only) the ontology file. Read nothing else.
 
-Your prompt gives you: PDF, EXTRACTION MODE (Simplified or Full), TOPIC, TOPIC DESCRIPTION, ONTOLOGY FILE, ONTOLOGY MATCHING MODE (`full` or `deferred`), and OUTPUT FOLDER (`pathwise_output/articles/<pdf name>/`). If ONTOLOGY FILE is `none`, there's no ontology to read: follow every rule written for `deferred` mode (verbs, species words, and listing no new relationship verbs).
+Your prompt gives you: PDF, EXTRACTION MODE (Simplified or Full), TOPIC, TOPIC DESCRIPTION, ONTOLOGY FILE, ONTOLOGY MATCHING MODE (`full` or `deferred`), and OUTPUT FOLDER (`pathwise_output/articles/<pdf name>/`). If ONTOLOGY FILE is `none`, there's no ontology to read: treat the ontology matching mode as `deferred`.
+
+Short forms used below: MIE is the molecular initiating event; `KE:n` and `KER:n` are the ids of key events and key event relationships; HGNC is the official gene-symbol list.
 
 ## The rule that overrides everything
 
 Everything you record must come from what **this article** says, in its text or figures. Never use background knowledge, other articles, textbooks, databases or AOP-Wiki to fill a gap, resolve an ambiguity, order the steps or shape the structure, even when you recognize the mechanism. If the article is vague or unusual, record it that way. If you can't point to a quoted passage that supports a key event or relationship, leave it out. Never look anything up, not even for wording.
 
-Two uses of general knowledge are allowed, because they only rename and never add a fact about the biology: naming a family or group of genes or proteins when the article lists some of its members (see "Enzymes, other actors and families"), and writing an organ adjective as its noun (`hepatic` as `liver`, `renal` as `kidney`).
+General knowledge may be used only to rename something the article already names, never to add a fact about the biology: to name a family or group when the article lists some of its members (see the enzymes and families rule under "Naming key events"), to write an organ adjective as its noun (`hepatic` as `liver`), and for the naming sources in Step 4 (official gene symbol, common chemical name, standard clinical term). Use these only when you are sure; otherwise keep the article's own wording.
 
 Out of scope: dose or exposure numbers, narrative summaries, judging the article's quality, and deciding whether a disagreement is real biology.
 
@@ -43,49 +45,52 @@ Record whatever shape the article describes (chain, branches, convergence, loops
 
 ### Naming key events
 
-- **Measurement test.** Every key event name must say what someone would measure to see it. There's no limit on how many key events an article gives; the detail follows the article. Review articles rarely say how something was measured, so judge from the wording what could be measured.
+Here "tags" are the two verbs of a relationship (see "Relationships"), and `form` and `gene_parts` are defined under "Fields".
+
+- **Measurement test.** Every key event name must say what someone would measure to see it. Review articles rarely say how something was measured, so judge from the wording what could be measured.
 - **As specific as the article.** Whenever the article states it as established, the name carries the most specific entity, process, actor (enzyme, transporter, receptor and so on), gene, cell type, tissue or compartment it gives for that event. Never add a word the article doesn't state for that event, even one that seems obvious (if it never says "mitochondrial", the name never says it).
   - **Two terms for one event.** When the article uses a general and a more specific term for the same event, use the more specific one. When the two differ on different points (one gives the site, the other the kind of change) and the article ties them to the same event, combine the most specific parts of both into one key event. When the article treats them as different steps or different kinds of change, keep two key events. Only parts the article presents as established are combined.
   - **Amount or process.** Name only what was reported. An amount is the thing (`bile_acids`); a ratio is the ratio (`testosterone_to_estradiol_ratio`). Don't turn an amount into a process the article doesn't state, and don't reduce a stated process to an amount. If the article says the process ("bile acid synthesis fell"), the name says it (`bile_acid_synthesis`).
-  - **Name what was measured.** A probe signal over time is a production rate (`nitric_oxide_production`), not an amount.
+  - **Name what was measured.** A probe signal over time is a production rate (`nitric_oxide_production`) only when the article says production, formation or release; otherwise name the thing (`nitric_oxide`).
   - **Same wording, same key event.** The same statement always gets the same name, and one file never holds two key events for the same wording.
-  - **Stop where it's useful.** An enzyme is in; one amino acid in it is too fine.
+  - **Stop where it's useful.** Never go below a gene, protein, metabolite, cell type or compartment (no residues or domains).
 - **Name structure.** Build every name from these parts, in this order, using only the parts the article gives:
-  `<entity>_<process>_by_<actor>_in_<site>`
-  - **Entity:** what the event is about, first: a gene or protein (HGNC symbol), a metabolite, a lipid, a complex or another thing.
+  `[<timing>_][<state>_]<entity>_<process>_by_<actor>_in_<site>[_<level>]`
+  - **Timing** (optional): a timing or intensity word, only when the article says it is necessary (see "Timing words").
+  - **State** (optional): a modified form that acts next, only when the article says so (see "Process words"): `phosphorylated_<entity>_translocation_to_<site>`.
+  - **Entity:** what the event is about: a gene or protein (HGNC symbol), a metabolite, a lipid, a complex or another thing.
   - **Process:** only when it passes "Process words" below.
   - **Actor** (after `by`): what carries the process out, when stated: an enzyme, transporter, receptor, channel, transcription factor, kinase or other.
   - **Site** (after `in`): where it happens, when stated: an organ, tissue, cell type or compartment (`in_liver`, `in_hepatocytes`, `in_cytosol`).
-  - **Movement** uses `_to_<site>` or `_from_<site>`: `<entity>_translocation_to_<site>`, `<entity>_release_from_<site>`. A transfer from one place to another keeps one site: the destination (`_to_`) for movement into it, or the origin (`_from_`) for release out of it. A name ending in `_ratio` is a ratio, not a movement.
-  - A name holds one entity, at most one process, at most one actor and at most one site, and stays within about 70 characters. If the article gives more detail than fits, keep the most specific parts and leave the rest to the definition.
-  - **A site is never a prefix** (no `mitochondrial_…`, `hepatic_…`), and the word is always `in`, never `on`.
+  - **Level** (optional suffix): only to separate two otherwise identical names (see "No two key events in this file share a name").
+  - **Movement:** use `_from_<origin>` when the process word is release, efflux or export, otherwise `_to_<destination>`: `<entity>_translocation_to_<site>`, `<entity>_release_from_<site>`. A movement name takes no `in_<site>`.
+  - A name holds one entity, at most one process, at most one actor and at most one site; the one exception is a `_ratio` name, which holds two entities (`testosterone_to_estradiol_ratio`). It is at most 70 characters: if a name is longer, drop the actor first, then the site, then the process, never the entity.
+  - **A site is never a prefix** (no `mitochondrial_…`, `hepatic_…`). A site is introduced only by `in`, `to` or `from`, never `on`.
+  - **Organs** are written as the organ noun, using the ontology's `locations` words when it has them (`liver`, not `hepatic`). Cell types are plural (`hepatocytes`, `kupffer_cells`); a compartment is its plain noun (`mitochondria`, `cytosol`, `nucleus`).
   - **This order applies to terms you mint.** A term that is already in the ontology is reused exactly as written, even when its name doesn't follow this order (an established phrase such as "mitochondrial dysfunction" can live in the ontology as it is); see Step 4.
-  - **Organs** are written as the organ noun, using the ontology's `locations` words when it has them (`liver`, not `hepatic`; `kidney`, not `renal`); turning an organ adjective into its noun is allowed. Cell types are plural (`hepatocytes`, `kupffer_cells`); a compartment is its plain noun (`mitochondria`, `cytosol`, `nucleus`). A fixed list of sites and cell types will come with the ontology; until then use the article's own noun in this form.
-  - **A timing or intensity word**, when the article says it is necessary (see "Timing words"), comes first (`sustained_<entity>_activation`).
 - **Process words.** A word that says what happens to the thing goes in the name only if the relationship tags can't carry the same biology without it. The test: leave the word out and read the arrows. If the meaning changes, keep the word.
-  - **Leave out** a word that only says something went up, went down or became active, because a tag already says it: activation, inhibition, induction, upregulation, downregulation, increase, decrease, elevation, reduction, accumulation, expression. The tags `activates`, `inhibits`, `upregulates`, `downregulates`, `increases` and `decreases` already say these (`cyp1a1`, not `cyp1a1_activation`). `expression` is carried by `form` in `gene_parts` and the tags.
+  - **Leave out** a word that only says something went up, went down or became active, because a tag already says it: activation, inhibition, induction, upregulation, downregulation, increase, decrease, elevation, reduction, accumulation, expression. The tags `activates`, `inhibits`, `upregulates`, `downregulates`, `increases` and `decreases` already say these (`cyp1a1`, not `cyp1a1_activation`). `expression` is carried by `form` in `gene_parts` and the tags. The one exception is a process word kept with a timing word (see "Timing words").
   - **Keep** a word that says *how* an amount or state changed, when the article uses it, because `increases` and `decreases` only mean a general change in level: made (production, formation, synthesis), used up or removed (depletion, degradation), moved (release, uptake, secretion, translocation), chemically modified (phosphorylation, ubiquitination, acetylation and the like).
   - **Exception:** leave a kept word out when the verb on the arrow the article states it with already says it (`phosphorylates`, `translocates_to`, `binds_to`, `transforms_into`). When a named actor phosphorylates a target, the verb carries it and the key event is the bare target; when no actor is named, the word stays in the name.
   - **When you aren't sure** whether a word only says up, down or active, or names a distinct kind of change, keep the article's own word.
-  - **A modified form** (phosphorylated, oxidized) stays in the name only when the article says that form is what acts next.
+  - **A modified form** (phosphorylated, oxidized) is written as a state prefix (`phosphorylated_<entity>_…`), and only when the article says that form is what acts next.
   - **A bare gene or protein name** means its activity or level; `form` in `gene_parts` and the tags say which.
-  - **Timing or intensity words** keep the word they describe (`sustained_<entity>_activation`), because dropping it would leave the timing word with nothing to describe. See "Timing words" below.
-- **Level words.** A word that only restates the level (cellular, molecular, tissue, organ) stays out of the name, because `level` carries it. Keep one only when it adds biological information, for example when the article contrasts the same event at two levels. When the cell type is stated, name that instead (`necrosis_in_hepatocytes`). The one other exception is the level suffix that separates two otherwise identical names (see "No two key events in this file share a name").
-- **A compound that is already a key event** isn't repeated inside the names of other key events. The relationship carries the link.
+- **Level words.** A word that only restates the level (cellular, molecular, tissue, organ) stays out of the name, because `level` carries it. Keep one only when it adds biological information, for example when the article contrasts the same event at two levels. When the cell type is stated, name that instead (`necrosis_in_hepatocytes`). The one other exception is the level suffix that separates two otherwise identical names (see the rule "No two key events in this file share a name" below).
+- **A compound the relationship already names.** When the relationship into a key event comes from a compound that is itself a key event, don't repeat that compound in the target's name (`<compound>` → `protein_adducts`, not `<compound>_protein_adducts`). An actor or site that is also a key event may still appear in a name.
 - **Enzymes, other actors and families.**
   - One actor stated: it goes in the name (`_by_<symbol>`).
-  - Several members of the same family stated, or the article says several family members act but names only one: name the family in the key event (the article's own group word when it uses one, otherwise an established family name; this is an allowed use of general knowledge, and it includes writing out a family abbreviation the article only gives as an abbreviation). The family name is written out, in the singular, with underscores. List the members the article names in `family_members` (see "Fields"), marking `"primary": true` on the one the article calls the main or primary one (`false` on all of them when it names none). `gene_parts` stays `[]` for a family, because it only holds symbols that are inside the id.
-  - The family rule applies to the actor position (`by_<actor>`), and to cases where the article itself groups the members under one word. Entities joined by "and" ("`<A>` and `<B>` increased") are split into separate key events. Several actors from different families are separate key events too, because a name holds one actor.
+  - **Several members of one family** stated, or the article says several family members act but names only one: name the family in the key event. This applies only in the actor position (`by_<actor>`) or when the article itself groups the members under one word; entities joined by "and" are split (see "One measurable change per key event"). Use the article's own group word when it has one, otherwise an established family name (this includes writing out a family abbreviation the article only gives as an abbreviation), written out, in the singular, with underscores. List the members the article names in `family_members` (see "Fields"), marking `"primary": true` on the one the article calls the main or primary one (`false` on all of them when it names none). `gene_parts` stays `[]` for a family, because it only holds symbols that are inside the id.
+  - Several actors from different families are separate key events, because a name holds one actor.
 - **One measurable change per key event.** A key event is one measurable change in one thing. Judge from the wording what would plausibly be measured separately: a different assay, readout, cell type or compartment.
   - When the article joins several items with "and", "or", a comma, "then" or "followed by", give each item its own key event when each could be measured on its own. They are parallel key events, and each gets its own relationship to the shared source or target.
   - Keep them as one only when the article measures them together as a single class (one combined readout).
   - A chain in one phrase ("X is released and then moves to Y") becomes one key event per step, joined by relationships. The same quote can support each of them.
 - **One level per key event.** An event the article describes across two levels (a molecular change and the tissue damage it causes) is split into two key events, each named on its own (`<entity>_<process>_in_<cell type>` for the molecular change, `injury_in_<organ>` for the damage).
-- **Never in a name:** species, sex, life stage (species has its own field; Full mode records sex and life stage in fields, and Simplified mode leaves them out), another key event, relationship or pathway, and threshold words the article doesn't define (`insufficient`, `inadequate`).
-- **No initiating chemical.** The chemical that starts the pathway (the stressor) never appears inside another key event's name or definition: "cisplatin-induced glutathione loss" is `glutathione_loss`. When the article names the stressor, it is its own node (see "The stressor, the MIE and the endpoint"). Chemicals formed later in the pathway (a metabolite such as acetaldehyde) are fine as their own key events, and follow "A compound that is already a key event" above.
+- **Never in a name:** species, sex, life stage, the whole name of another key event, a relationship or pathway, and threshold words the article doesn't define (`insufficient`, `inadequate`). An actor or site that is also a key event may appear in a name.
+- **No initiating chemical.** The chemical that starts the pathway (the stressor) never appears inside another key event's name or definition: "cisplatin-induced glutathione loss" is `glutathione_loss`. When the article names the stressor, it is its own node (see "The stressor, the MIE and the endpoint"). Chemicals formed later in the pathway (a metabolite such as acetaldehyde) are fine as their own key events, and follow the compound rule above.
 - **Direction.** Up or down goes in the relationship tags, so the key event stays neutral (`bile_acid_synthesis` with a `decreases` tag). Never drop a process the test above says to keep just to make a name neutral.
 - **Timing words.** First decide what the word describes:
-  - **One event** (how long or how strongly it happens): it goes in the name only when the article says the timing or intensity is necessary ("*sustained* AHR activation causes toxicity, *transient* doesn't" → `sustained_ahr_activation`); otherwise leave it out (`ahr`).
+  - **One event** (how long or how strongly it happens): it goes in the name only when the article says the timing or intensity is necessary ("*sustained* AHR activation causes toxicity, *transient* doesn't" → `sustained_ahr_activation`); otherwise leave it out (`ahr`). This is the one case where `activation` stays in a name: the timing word needs the process it describes.
   - **The gap between two events** ("leads to necrosis *within 6 hours*"): never in a name or tag. In Full mode it goes in the relationship's `time_scale`.
 - **No two key events in this file share a name.** If two would, add what differs (site, cell type, or what was measured). If the article gives nothing that differs, add the level as a suffix (`hypertrophy_cellular`, `hypertrophy_tissue`). A feedback loop reuses its existing key event; it never duplicates one.
 - **Vague terms.** A general term that still passes the measurement test is normal (`glucuronidation` without its enzyme, `necrosis` without its cell type). A term that fails it (a bare `uptake`, `transport` or `binding` with no object, or "histological changes"): re-check what you read for the site, actor, cell type or substrate and add it (`slco1b1_uptake`). If the article never says, end the term with `_unspecified` (`uptake_unspecified`), or use the ontology's own marker if it has one (full mode). Never fill the gap from your own knowledge.
@@ -93,38 +98,25 @@ Record whatever shape the article describes (chain, branches, convergence, loops
 ### Id style and abbreviations
 
 - Ids use only lowercase letters, digits and `_`. A hyphen or space becomes `_` (`hla_b`, labelled `HLA-B`).
-- **Genes and proteins:** the official HGNC symbol, lowercase in the id (`ugt1a1`), official capitalization in the label (`UGT1A1`), kept inside larger terms (`glucuronidation_by_ugt1a1`). A protein family or a complex of several genes isn't one symbol, so write it out (`aryl_hydrocarbon_receptor_nuclear_translocator`, not a guessed single symbol). If you aren't sure which official symbol an alias stands for, write the alias exactly as the article does (lowercase, underscores); the reference check at the end of the run renames it.
-- **Everything else is written out:** `reactive_oxygen_species_production`, not `ros_production`; `polychlorinated_biphenyl`, not `pcb`. Abbreviations go in the term's `synonyms`.
-- **Greek letters:** in a gene or protein, use the HGNC symbol exactly, which already turns the Greek letter into a Latin letter (PPARα → `ppara`, PGC-1α → `ppargc1a`, HIF-1α → `hif1a`, TNF-α → `tnf`). Never write `ppar_alpha`, `pparalpha` or `ppargamma`. Everywhere else, spell the Greek letter as a lowercase English word in both the id and the label (`fatty_acid_beta_oxidation`, labelled `fatty acid beta-oxidation`; `alpha_tocopherol`). Never put the symbol (α, β, γ) in an id or label, and never shorten a Greek letter to one Latin letter outside an HGNC symbol (not `b_oxidation`). Put the article's own spellings (`PPARα`, `PPAR-alpha`) in `synonyms`. Quotes keep the article's exact characters, including α.
-- **Expand an abbreviation only when this article spells it out** (at first use or in an abbreviation list). Otherwise keep it exactly as written and list it in `undefined_abbreviations` (Step 4). Never expand it from your own knowledge (a family abbreviation used to name a family is the one exception; see "Enzymes, other actors and families").
+- **Genes and proteins:** the official HGNC symbol, lowercase in the id (`ugt1a1`), official capitalization in the label (`UGT1A1`), kept inside larger terms (`glucuronidation_by_ugt1a1`). A protein family or a complex of several genes isn't one symbol, so write it out (`nuclear_factor_kappa_b`, not a guessed single symbol). If you aren't sure which official symbol an alias stands for, write the alias exactly as the article does (lowercase, underscores); the reference check at the end of the run renames it.
+- **Expand an abbreviation only when this article spells it out** (at first use or in an abbreviation list). Otherwise keep it exactly as written and list it in `undefined_abbreviations` (Step 4). Never expand it from your own knowledge; the exceptions are the allowed uses listed at the top of this file.
+- **Everything else is written out** (when the article spells it out): `reactive_oxygen_species_production`, not `ros_production`; `polychlorinated_biphenyl`, not `pcb`. Abbreviations go in the term's `synonyms`.
+- **Greek letters in a gene or protein:** use the HGNC symbol exactly, which already turns the Greek letter into a Latin letter (PPARα → `ppara`, PGC-1α → `ppargc1a`, HIF-1α → `hif1a`, TNF-α → `tnf`). Never write `ppar_alpha`, `pparalpha` or `ppargamma`.
+- **Greek letters everywhere else:** spell the letter as a lowercase English word in both the id and the label (`fatty_acid_beta_oxidation`, labelled `fatty acid beta-oxidation`; `alpha_tocopherol`). Never put the symbol (α, β, γ) in an id or label, and never shorten a Greek letter to one Latin letter outside an HGNC symbol (not `b_oxidation`). Put the article's own spellings (`PPARα`, `PPAR-alpha`) in `synonyms`. Quotes keep the article's exact characters, including α.
 
 ### The stressor, the MIE and the endpoint
 
 - **Stressor.** When the article names the chemical (or other agent) that starts the pathway, it is its own key event with `"stressor": true` (and `mie: false`). Every other key event has `"stressor": false`.
-- **MIE** (`"mie": true`): the first key event after the stressor, meaning each key event the stressor's relationships lead to directly. If the article names no stressor, the MIE is each key event with no relationship leading into it (other than from inside a feedback loop). Don't choose the MIE by what usually starts this kind of pathway. A condition that only makes a step possible (for example a protective molecule being used up) is not an MIE; it feeds into the route with its own arrow.
+- **MIE** (`"mie": true`): the first key event after the stressor, meaning each key event the stressor's relationships lead to directly. If the article names no stressor, the MIE is each key event with no relationship leading into it, other than from inside a feedback loop and other than a condition. Don't choose the MIE by what usually starts this kind of pathway. A condition is a key event that only makes a step possible (for example a protective molecule being used up): it feeds into the route with its own arrow, and is never an MIE.
 - **Endpoint** (`"endpoint": true`): each key event at the end of a branch of this article's pathway that leads toward what TOPIC is about, with nothing after it. The pathway goes as far as the article takes it: the endpoint is the furthest event the article links to the pathway, whatever its level. If the article stops at a cell-level event, that event is the endpoint. "Endpoint" means the end of the article's chain, not "harmful": a protective endpoint such as clearance counts too. Don't set it on an intermediate step, and never on something stated only as background (see "What to record").
 
 ### Every key event is on a route
 
-Each key event needs at least one relationship to or from it, and must lie on a stated route, through other key events, to an endpoint. The route starts at the stressor or an MIE, or at a condition that feeds into the route with its own arrow (it has no arrow into it, and it is not an MIE). A relationship can skip steps only when the article states it that way. A branch that ends away from the endpoints, neither reaching one nor coming back into the route, is left out. A branch that leaves and comes back into the route (including a loop) is part of it. If the article mentions an event but never says what it connects to, leave it out.
+Each key event needs at least one relationship to or from it, and must lie on a stated route, through other key events, to an endpoint. The route starts at the stressor, an MIE, or a condition (see above). A branch that ends away from the endpoints, neither reaching one nor coming back into the route, is left out. A branch that leaves and comes back into the route (including a loop) is part of it.
 
 ### Disproved steps
 
-If the article says a step was proposed but the evidence disproves it, and states no evidence still supporting it, keep it out of the pathway and record it in `disproved_steps`:
-
-```json
-"disproved_steps": [
-  {
-    "kind": "relationship",
-    "source_term": "<term>",
-    "target_term": "<term>",
-    "evidence": "<verbatim quote>",
-    "reference_ids": []
-  }
-]
-```
-
-A disproved key event on its own uses `"kind": "key_event"` and `"term"` (in place of `source_term` and `target_term`). These terms go through Step 4. If the article still asserts a step but also reports a test that contradicts it, the step stays in the pathway with the contradicting result recorded in `quality` (it's flagged as conflicting evidence later).
+If the article says a step was proposed but the evidence disproves it, and states no evidence still supporting it, keep it out of the pathway and record it in `disproved_steps`. A disproved relationship has `kind` `"relationship"`, `source_term` and `target_term`; a disproved key event on its own has `kind` `"key_event"` and `term`. Each also has `evidence` and `reference_ids` (see the shapes table under "The file layout"). These terms go through Step 4. If the article still asserts a step but also reports a test that contradicts it, the step stays in the pathway with the contradicting result recorded in `quality` (it's flagged as conflicting evidence later).
 
 ### Methods the article calls experimental
 
@@ -171,7 +163,7 @@ When the article describes a loop (a later event feeding back into an earlier on
 ```
 
 - Only when the article calls it a loop, cycle, vicious circle, feedback or self-perpetuating. Arrows that happen to form a circle don't count, and never add an arrow to close one.
-- `key_events` in causal order from where the article starts; `closing_relationship` leads from the last back to the first; every step between is a relationship in this file.
+- `key_events` in causal order, starting at the loop event the article names first; `closing_relationship` leads from the last back to the first; every step between is a relationship in this file.
 - `effect`: `"amplifies"` (strengthens or sustains itself), `"dampens"` (limits or reverses), or `"unstated"`, from the article's words only.
 - **Feedforward:** one event affecting a later one both directly and through a middle step is ordinary branching, with no entry. Only if the article calls it feedforward: `"type": "feedforward"`, `key_events` = start, middle event(s), later event, and `closing_relationship` = the direct relationship from start to later event.
 - `feedback_loops` is `[]` when there are none.
@@ -185,12 +177,12 @@ Every key event gets a `quality` object with two criteria, and every relationshi
   - Every reported test gets an `outcome`: `"supported"` (it came out as the step predicts) or `"contradicted"` (the downstream event happened anyway, or didn't follow).
 - `mechanism_stated` (relationships only): does the article explain *how* the source causes the target, not just that it does? Never write the explanation yourself.
 - Values: `true` (the article reports it), `false` (the article explicitly says it wasn't done), `"unknown"` (the article says nothing). `"unknown"` means "not visible in this article," which is different from `false`. Use only these three values.
-- `quotes`: one entry for every `true` or `false`: `{ "assessment": "counterfactual_evidence" | "disprove_attempts" | "mechanism_stated", "quote": "<verbatim>", "reference_ids": [] }`, plus `"outcome"` on a disprove entry that reports a test. Empty when everything is `"unknown"`. No quote means `"unknown"`.
+- `quotes`: one entry for every `true` or `false`: `{ "assessment": "counterfactual_evidence" | "disprove_attempts" | "mechanism_stated", "quote": "<verbatim>", "reference_ids": [] }`, plus `"outcome"` (placed after `assessment`) on a disprove entry that reports a test. Empty when everything is `"unknown"`. No quote means `"unknown"`.
 - Judge each key event and relationship on its own, and from this article only: never mark `true` because you know a famous study exists.
 
 ### Reported inconsistencies (both modes)
 
-When the article reports a mismatch without calling it a test ("in some studies the first measure rose without the second"), add to the relationship's `inconsistencies`: `[{ "quote": "<verbatim>", "explanation": "<the article's own explanation, or null>", "reference_ids": [] }]`. Cautious wording ("may", "is thought to") is not an inconsistency. `inconsistencies` is `[]` when there are none.
+When the article reports a mismatch without calling it a test ("in some studies the first measure rose without the second"), add to the relationship's `inconsistencies` a `quote` and an `explanation` (the article's own, or `null`). Cautious wording ("may", "is thought to") is not an inconsistency. `inconsistencies` is `[]` when there are none.
 
 ## The file layout
 
@@ -199,7 +191,7 @@ Every pathway file has exactly the same layout, so files from different articles
 1. **Write the file exactly like the template below:** two-space indentation, one field per line, every key in the template's order. Don't add a key and don't leave one out.
 2. **Every field in the template for your mode is always present.** When the article doesn't state it, write `[]` for a list, `null` for text or an object, `false` for a true/false flag, and `"unknown"` where the template shows it. Never invent another marker. The only other values are the ones defined in this file: `["unspecified"]` for `species` and `"unknown"` for `level` when the article doesn't say, `"unspecified"` for a `form`, and `"not stated"` for `extracted_by_model` and `extracted_on`. A `source_article` detail you can't read is `null` (`[]` for `authors` and `affiliations`).
 3. **Simplified mode writes only the fields in the Simplified template.** It doesn't write the Full-mode fields at all, not even empty. **Full mode** writes the Simplified fields and the Full-mode fields.
-4. A list of plain words stays on one line (`"species": ["<species>"]`). Every object, and every list of objects, is spread over lines, one key per line.
+4. A list of plain words stays on one line (`"species": ["<species>"]`). Every object, and every list of objects, is spread over lines, one key per line. Braces written on one line elsewhere in this file only show which keys an object has; in the file, always spread them.
 5. `references` is the last key.
 
 ### Template (Simplified fields)
@@ -284,7 +276,7 @@ Placeholders in `<angle brackets>` stand for real values. The template shows one
 }
 ```
 
-### Full mode: extra fields
+### Full mode only: extra fields in the template
 
 In Full mode, add these keys to every key event, between `quality` and `source_articles`, in this order:
 
@@ -350,19 +342,6 @@ When a field holds something, its object or list entry is spread over lines in t
 | `feedback_loops` entry | `id`, `type`, `key_events`, `closing_relationship`, `effect`, `evidence`, `reference_ids` |
 | `references` entry | `ref_id`, `first_author`, `year`, `title`, `journal`, `doi`, `citation_text` |
 
-A populated entry looks like this (one `confounders` entry, with placeholders):
-
-```json
-      "confounders": [
-        {
-          "type": "<type>",
-          "description": "<the article's own words>",
-          "evidence": "<verbatim quote>",
-          "reference_ids": ["ref_1"]
-        }
-      ],
-```
-
 ### `disproved_steps.json` (an article with no key events)
 
 An article that has disproved steps but no key events writes this file instead of a pathway file, in the same layout:
@@ -400,14 +379,14 @@ An article that has disproved steps but no key events writes this file instead o
 - `id`: `KE:0`, `KER:0` and so on, unique in this file. Every `source` and `target` is a real `KE` id.
 - `biological_entity_id`: the term. Write a plain provisional name while reading; Step 4 sets the final id.
 - `gene_parts` (key events): one entry for every HGNC gene or protein symbol inside `biological_entity_id`, with the symbol exactly as written there and its `form`: `glucuronidation_by_ugt1a1` → `[{ "symbol": "ugt1a1", "form": "protein" }]`. Use `[]` when the term has no gene or protein in it (`liver_weight`), and also for a written-out family or complex, which has no single symbol. Set it after Step 4, from the final id. A reference check after the run uses this to look up only the gene part and leave the rest of the name alone.
-- `family_members` (key events): when the key event is named by a family (see "Enzymes, other actors and families"), one entry for each member the article names: its HGNC symbol in lowercase, its `form` (as for `gene_parts`) and `primary` (`true` for the one the article calls the main or primary one, otherwise `false`). `[]` when the key event is not named by a family. It is never used to look up names and never changes when terms are relabeled.
+- `family_members` (key events): when the key event is named by a family (see the enzymes and families rule under "Naming key events"), one entry for each member the article names: its HGNC symbol in lowercase, its `form` (as for `gene_parts`) and `primary` (`true` for the one the article calls the main or primary one, otherwise `false`). `[]` when the key event is not named by a family. It is never used to look up names and never changes when terms are relabeled.
 - `form` (inside `gene_parts` and `family_members`): whether this article's evidence for the key event is about the gene or the protein. The same symbol names both (`top2a` is the gene and the protein), so this is the only place the difference is recorded. Decide it from this article's own wording for this key event, never from what you know about the gene:
   - `"gene"`: the article talks about the gene or its RNA: transcription, mRNA level, gene expression measured as mRNA (qPCR, RNA-seq, microarray), promoter activity, methylation, mutation, polymorphism, knockout or knockdown.
   - `"protein"`: the article talks about the protein: activity, activation, binding, inhibition, protein level (western blot, immunostaining, ELISA), phosphorylation, nuclear translocation, degradation. An enzyme carrying out a reaction (`glucuronidation_by_ugt1a1`) is the protein.
   - `"unspecified"`: the article doesn't say which, for example "ACOX1 expression increased" or "ACOX1 levels rose" with no method given. Don't guess.
-  When one key event has several gene parts, give each its own form (in "PPARα activation induces Acox1 mRNA", `ppara` is `"protein"` in the PPARα key event and `acox1` is `"gene"` in the Acox1 key event).
-- `level`: `"molecular"`, `"cellular"`, `"tissue"`, `"organ"`, `"individual"`, `"population"`, or `"unknown"`, from what the article describes.
-- `species`: the species the article says the evidence came from, or `["unspecified"]`. A relationship's species comes from its own quote. Use the ontology's organism terms (`human`, `mouse`, `rat`, `mammals`) when one matches (in `deferred` mode, the common lowercase name), and the same word for the same species throughout the file (`mice` is `mouse`). Only where the evidence came from, never where it might also apply.
+  When one key event has several gene parts, give each its own form (a name holding two symbols, such as `<symbol a>_<process>_by_<symbol b>`, has two gene parts, each with its own `form`).
+- `level`: `"molecular"`, `"cellular"`, `"tissue"`, `"organ"`, `"individual"`, `"population"`, or `"unknown"`, from what the article describes. A stressor's `level` is `"unknown"`.
+- `species`: the species the article says the evidence came from, or `["unspecified"]`. A relationship's species comes from its own quote. Use the ontology's organism terms (`human`, `mouse`, `rat`, `mammals`) when one matches (in `deferred` mode, the common lowercase name), and the same word for the same species throughout the file (`mice` is `mouse`). Record only the species the evidence came from, never species it might also apply to.
 - `adjacency` (relationships): `"non_adjacent"` when the article says there are undescribed steps in between, otherwise `"adjacent"`.
 - `source_type` (key events only): `"text"`, `"figure"` or `"both"`. Relationships don't have it.
 - `evidence`: a short exact quote from the article supporting this key event or relationship. For a figure with no supporting text, quote its caption or labels. Further quotes for the same item go in `additional_evidence`.
@@ -415,32 +394,31 @@ An article that has disproved steps but no key events writes this file instead o
 - `reference_ids`: filled in Step 3C. Start as `[]`.
 - `source_articles`: `["<article_slug>"]` on every key event and relationship.
 - `ontology_match`: `null`, or `"exact"` or `"wording"` for a key event whose term was reused from the ontology (Step 4).
-- `aop_id` and the file name: `<mie term>@<endpoint term>_<slug>` with final terms after Step 4, using the first key event marked `mie: true` and the first marked `endpoint: true` in file order, or `unk` for a missing one.
+- `aop_id` and the file name: `<mie_term>@<endpoint_term>_<article_slug>` with final terms after Step 4, using the first key event marked `mie: true` and the first marked `endpoint: true` in file order, or `unk` for a missing one. List key events in the order the article first presents them, and relationships in the order of their `evidence` quotes in the article.
 
 ### Full mode only
 
 If EXTRACTION MODE is Full, also record the following on the same read, only when the article states them, each backed by a verbatim quote. Absence is the default and is written as the empty value from the layout rules above (`[]`, `null`, `false`, `"unknown"`); never infer anything from silence.
 
-1. **Conditional branching.** On key events: `species_annotation` (species → short state, e.g. `{ "rat": "present", "human": "absent" }`) and `molecular_basis`. On relationships: `gate_type` (`"species_conditional"`, `"circumstance_conditional"` or `"genetic_conditional"`), with `active_in` and `absent_in` listing the species, circumstances or genotypes, and an optional short `note` (never naming another key event). `special_circumstances` (on key events and relationships): `[{ "condition": "...", "evidence": "<verbatim>", "reference_ids": [] }]`, with `has_special_circumstances` true when non-empty. Fields without their own quote must be supported by the item's `evidence` or `additional_evidence`.
-2. **Confounders** (on key events and relationships): factors the article names that change how strongly a step happens, or how strongly or how much of a key event occurs, without switching it on or off: `confounders: [{ "type": "sex" | "age" | "diet" | "disease_state" | "genetic_polymorphism" | "background_frequency" | "species_physiology" | "other", "description": "<the article's own words>", "evidence": "<verbatim>", "reference_ids": [] }]`. Record one on a relationship when it changes the strength of that step, and on a key event when it changes how much or how strongly that event occurs, including its baseline level.
-3. **Developmental window** (on key events and relationships): `developmental_window: { "species": "...", "stage": "...", "time_range": "...", "evidence": "<verbatim>", "reference_ids": [] }`. Sex and life stage are recorded only here and in 1–2, never in names.
-4. **Initiating-event class:** `initiating_event_class`: `"genetic"`, `"chemical"` or `"other"`, as the article frames what starts the pathway. Put it on the stressor node when there is one, otherwise on the MIE. It is `null` on every other key event.
+1. **Conditional branching.** On key events: `species_annotation` (each species → the article's short state word, such as `present` or `absent`) and `molecular_basis` (the article's own short phrase for the molecular reason a species differs, or `null`). On relationships: `gate_type` (`"species_conditional"`, `"circumstance_conditional"` or `"genetic_conditional"`), with `active_in` and `absent_in` listing the species, circumstances or genotypes, and an optional short `note` (never naming another key event). `special_circumstances` (on key events and relationships), with `has_special_circumstances` true when it is non-empty. Fields without their own quote must be supported by the item's `evidence` or `additional_evidence`.
+2. **Confounders** (on key events and relationships): factors the article names that change how strongly a step happens, or how strongly or how much of a key event occurs, without switching it on or off. Each `confounders` entry has a `type` (`sex`, `age`, `diet`, `disease_state`, `genetic_polymorphism`, `background_frequency`, `species_physiology` or `other`) and a `description` in the article's own words. Record one on a relationship when it changes the strength of that step, and on a key event when it changes how much or how strongly that event occurs, including its baseline level.
+3. **Developmental window** (on key events and relationships): `developmental_window` (the species, stage and time range the article gives). Sex and life stage are recorded only here and in 1–2, never in names.
+4. **Initiating-event class:** `initiating_event_class`: `"genetic"`, `"chemical"` or `"other"`, as the article frames what starts the pathway. Put it on the stressor node when there is one, otherwise on each MIE. It is `null` on every other key event.
 5. **Record-keeping fields** (they never decide inclusion):
-   - Key events: `measured_by: { "method": "<article's words>", "evidence": "<verbatim>", "reference_ids": [] }` (the method named for detecting the event, no rating), and `applicability_stated_by_paper: { "statement": "<article's words>", "evidence": "<verbatim>", "reference_ids": [] }` (where the article itself says the event likely applies; never reason about this yourself).
-   - Relationships: `concordance: { "dose": ..., "temporal": ..., "incidence": ..., "quotes": [] }`, each `true`, `false` or `"unknown"` (does the article say the source happens at an equal or lower dose, earlier, and in an equal or larger share of subjects?), with a `quotes` entry (`"assessment": "dose" | "temporal" | "incidence"`) for each `true` or `false`; `response_shape`: `"linear"`, `"threshold"`, `"sigmoidal"`, `"other"` or `"unknown"`, with `response_shape_evidence: { "quote": "<verbatim>", "reference_ids": [] }` unless `"unknown"` (then `null`); and `time_scale: { "value": "<article's wording, e.g. within 6 hours>", "evidence": "<verbatim>", "reference_ids": [] }`. No numbers are extracted or converted.
+   - Key events: `measured_by` (the method named for detecting the event, no rating) and `applicability_stated_by_paper` (where the article itself says the event likely applies; never reason about this yourself), each in the article's words.
+   - Relationships: `concordance` (`dose`, `temporal` and `incidence`, each `true`, `false` or `"unknown"`: does the article say the source happens at an equal or lower dose, earlier, and in an equal or larger share of subjects?), with a `quotes` entry (`assessment` `dose`, `temporal` or `incidence`) for each `true` or `false`; `response_shape` (`"linear"`, `"threshold"`, `"sigmoidal"`, `"other"` or `"unknown"`), with `response_shape_evidence` unless it is `"unknown"` (then `null`); and `time_scale` (the article's wording, e.g. "within 6 hours"). Dose and exposure numbers are never extracted; write times as the article words them.
 6. **`layers`:** each key event or relationship carrying any of 1–3 lists which apply: `"species_conditional"`, `"circumstance_conditional"`, `"genetic_conditional"` (matching its `gate_type` or `species_annotation`; `special_circumstances` counts as `"circumstance_conditional"`), `"confounder"`, `"developmental_window"`. Items with none have `"layers": []`.
 
 ## Step 3: Bibliography
 
-**Model:** set `extracted_by_model` to the model name and exact model id stated in your own system information (for example `Claude Opus 5.5 (claude-opus-5-5)`). Never guess; if it isn't stated, write `"not stated"`. Set `extracted_on` to today's date (`YYYY-MM-DD`) as your system information gives it, never estimated; if it isn't given, write `"not stated"`. Put both fields in `disproved_steps.json` too when you write one.
+**Model:** set `extracted_by_model` to the model name and exact model id stated in your own system information (for example `Claude Opus 5.5 (claude-opus-5-5)`). Never guess; if it isn't stated, write `"not stated"`. Set `extracted_on` to today's date (`YYYY-MM-DD`) as your system information gives it, never estimated; if it isn't given, write `"not stated"`.
+**A. This article:** `source_article` (its keys are in the template).
 
-**A. This article:** `source_article: { "article_slug", "title", "authors", "affiliations", "journal", "publication_date", "doi", "pdf_file" }`.
-
-**B. Only the works cited inside your quotes**, not the whole bibliography. For each distinct work cited in a quote (a bracketed number, or author-year), in order of first appearance: `{ "ref_id": "ref_1", "first_author": "...", "year": 2008, "title": "...", "journal": "..." | null, "doi": "..." | null, "citation_text": "<the in-text form>" }`. Copy titles faithfully. Never look up a DOI. Unclear fields are `null`: a wrong value is worse than a missing one. `references` is the last key in the file.
+**B. Only the works cited inside your quotes**, not the whole bibliography. For each distinct work cited in a quote (a bracketed number, or author-year), in order of first appearance in the quotes as they stand in your file: its `ref_id` (`ref_1`, `ref_2`, ...), `first_author`, `year`, `title`, `journal`, `doi` and `citation_text` (the in-text form). Copy titles faithfully. Never look up a DOI. Unclear fields are `null`: a wrong value is worse than a missing one.
 
 ## Step 3C: Link quotes to citations
 
-For every quote, set its `reference_ids` to the `ref_id`s cited in that quote's own sentence, or `[]` if none. That covers `evidence`, `additional_evidence`, `quality.quotes`, `inconsistencies`, `method_flag`, `feedback_loops`, `disproved_steps`, and in Full mode `special_circumstances`, `confounders`, `concordance.quotes`, `developmental_window`, `measured_by`, `applicability_stated_by_paper`, `response_shape_evidence` and `time_scale`. Never borrow a citation from a neighbouring sentence. Never leave `reference_ids` missing.
+For every quote, set its `reference_ids` to the `ref_id`s cited in that quote's own sentence, or `[]` if none. That covers `evidence`, `additional_evidence`, `quality.quotes`, `inconsistencies`, `method_flag`, `feedback_loops`, `disproved_steps`, and in Full mode `special_circumstances`, `confounders`, `concordance.quotes`, `developmental_window`, `measured_by`, `applicability_stated_by_paper`, `response_shape_evidence` and `time_scale`. Never borrow a citation from a neighbouring sentence.
 
 ## Step 4: Final terms
 
@@ -471,12 +449,12 @@ Apply this to every key event term, both relationship tags, and the terms in `di
 ```
 
 - `label`: display name, with genes and proteins in official capitalization.
-- `definition`: one sentence under 100 characters, written from this article, standing on its own: no other key event, no stressor, no cause-and-effect wording. `null` (with `definition_source: null`) if the article gives too little. For an `_unspecified` term, say what the article left out.
+- `definition`: one sentence under 100 characters, written from this article, standing on its own: no other key event, no stressor, no cause-and-effect wording. `definition_source` is `"article"`, or `null` together with a `null` definition when the article gives too little. An `_unspecified` term always gets a definition that says what the article left out.
 - `synonyms`: other names this article uses for it, such as its abbreviation. Terms only.
 - New relationship verbs (`full` mode only, and only when no ontology verb fits): `"category": "relationship_type"` plus `"direction"`: `"+"` (raises the other event), `"-"` (lowers it) or `"<>"` (neither, or unstated). In `deferred` mode, list no verbs. `direction` is `null` for an entity.
 - `possible_duplicate_of` and `reason` are `null` unless flagged.
 
-**Undefined abbreviations** go in your `undefined_abbreviations.json`, once each, written in the same layout (`[]` when there are none):
+**Undefined abbreviations** go in your `undefined_abbreviations.json`, once each (with the first term it appears in), written in the same layout (`[]` when there are none):
 
 ```json
 [
@@ -490,27 +468,22 @@ Apply this to every key event term, both relationship tags, and the terms in `di
 
 ## Step 5: Check before writing
 
-- Ids unique; every relationship points to real key events; every key event is in at least one relationship; no two key events share a `biological_entity_id`.
-- Every key event lies on a stated route to an endpoint (see "Every key event is on a route"); nothing comes only from background statistics, and the article presents each one as part of the pathway (not just a mention or an uncertain suggestion).
-- Every stated step is recorded, and a conditional sentence has one relationship per arrow.
-- Exactly the stressor node(s) have `stressor: true` and every other key event has `stressor: false`; `mie` and `endpoint` follow "The stressor, the MIE and the endpoint"; `aop_id` matches.
-- No key event name holds a word the article doesn't state, a site prefix, a level word that adds nothing, or a process word the "Process words" test says to leave out. Names follow `<entity>_<process>_by_<actor>_in_<site>` and stay under about 70 characters.
-- Every key event has `gene_parts` (matching the final id, each entry with a `symbol` and a `form`), `family_members`, `level`, `species`, `source_type`, `evidence`, `quality` (two criteria), `source_articles`. Every relationship has two tags, `adjacency`, `species`, `evidence`, `quality` (three criteria), `inconsistencies`, `source_articles`, and no `source_type`.
-- No name or definition contains species, another key event, or the stressor (except the stressor's own node).
-- Every `true`/`false` has a quote; every reported disprove test has an `outcome`; `quotes` is empty when all are `"unknown"`.
-- Every quote is an exact excerpt (with only the two clean-ups), and every quote has `reference_ids` pointing to real `ref_id`s.
-- Loops: real key events, steps all present, correct `closing_relationship`, `type`, `effect` and quote.
-- `disproved_steps` entries have quotes and aren't also in the pathway.
-- Every new term has all the fields in the `new_terms.json` layout, a definition under 100 characters or `null`; new verbs have `direction`.
-- Full mode: every Full-mode value is backed by a quote; `has_special_circumstances` matches; `layers` lists exactly what's present.
-- **Layout:** the file matches the template for your mode exactly: every key present and in order, two-space indentation, one field per line, `references` last. In Simplified mode no Full-mode key appears.
+- Ids are unique; every relationship points to real key events; no two key events share a `biological_entity_id`.
+- Every key event lies on a stated route to an endpoint, every stated step is recorded, and the article presents each one as part of the pathway (no background statistics, passing mentions or suggestions).
+- Names follow "Naming key events": no word the article doesn't state, no site prefix, no level word that adds nothing, process words by the test, within 70 characters. No name or definition holds a species or the stressor (except the stressor's own node).
+- Exactly the stressor node(s) have `stressor: true`; `mie`, `endpoint` and `aop_id` follow their rules; `gene_parts` matches the final ids.
+- Every `true`/`false` has a quote; every reported disprove test has an `outcome`; every quote is an exact excerpt (the two clean-ups only) with `reference_ids` that point to real `ref_id`s.
+- Loops and `disproved_steps` follow their sections; a disproved step is not also in the pathway.
+- Every new term has all the fields in the `new_terms.json` layout, with a definition under 100 characters or `null`; new verbs have `direction`.
+- Full mode: every Full-mode value is backed by a quote, and `has_special_circumstances` and `layers` match what is present.
+- **Layout:** the file matches the template for your mode exactly: every key present and in order, two-space indentation, one field per line, `references` last, and no Full-mode key in Simplified mode.
 
 ## Write your files and reply
 
 Write with the Write tool into your OUTPUT FOLDER only, in the layout above (two-space indentation, one field per line) for every JSON file. You can't read anything in `pathwise_output`, and you don't need to.
 
 - **At least one key event:** write `<aop_id>.json` (the complete file) and an identical copy at `original/<aop_id>.json` (kept unchanged as the backup), then `new_terms.json` and `undefined_abbreviations.json` (write `[]` when empty).
-- **No key events, but disproved steps:** write only `disproved_steps.json` and an identical copy at `original/disproved_steps.json`, (laid out as in "`disproved_steps.json`" above), `new_terms.json` and `undefined_abbreviations.json`. Don't write a pathway file.
+- **No key events, but disproved steps:** write only `disproved_steps.json` and an identical copy at `original/disproved_steps.json` (laid out as in "`disproved_steps.json`" above), `new_terms.json` and `undefined_abbreviations.json`. Don't write a pathway file.
 - **No key events and nothing else, excluded, or unreadable:** write nothing.
 
 Then reply with only this JSON, in one fenced code block:
@@ -529,7 +502,7 @@ Then reply with only this JSON, in one fenced code block:
 }
 ```
 
-`status` is one of: `processed successfully`, `processed — borderline on-topic`, `processed — borderline on-topic, no TOPIC-relevant content found`, `processed — on-topic, but no key events extracted`, `excluded — not relevant to TOPIC`, `failed to open`, `no readable text found`.
+`status` is one of: `processed successfully`, `processed — borderline on-topic`, `processed — borderline on-topic, no TOPIC-relevant content found`, `processed — on-topic, but no key events extracted`, `excluded — not relevant to TOPIC`, `failed to open`, `no readable text found`. When nothing is written, `key_events` and `relationships` are 0 and `files_written` is `[]`. An article with only disproved steps uses the status `processed — on-topic, but no key events extracted`.
 
 **`callout`**, a sentence or two the user will be told straight away, only for:
 - failed to open or no readable text: name the article; it was skipped;
