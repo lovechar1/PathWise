@@ -24,7 +24,7 @@ If the PDF won't open or has no readable text, stop: status `failed to open` or 
 
 ## Step 1b: Is the article on topic?
 
-Decide from the whole article, not the title or abstract. The bar is substantive engagement with TOPIC (and TOPIC DESCRIPTION), not a passing mention. When TOPIC names more than one element ("X and Y"), the article must connect to every element.
+Decide from the whole article, not the title or abstract. The bar is substantive engagement with TOPIC (and TOPIC DESCRIPTION), not a passing mention. When TOPIC names more than one subject ("X and Y"), the article must connect to each subject.
 
 - **Clearly off-topic:** status `excluded — not relevant to TOPIC`, with a one-line reason (required). Write no files and stop.
 - **On-topic:** go on to Step 2.
@@ -32,7 +32,7 @@ Decide from the whole article, not the title or abstract. The bar is substantive
 
 ## Step 2: Extract the pathway
 
-Read paragraph by paragraph. Record every key event and relationship this article describes within TOPIC. Find the supporting sentence first, then decide whether something belongs; never settle on a pathway shape and then look for sentences to fit it. When TOPIC names more than one element, every key event and relationship must connect, directly or through the chain, to every element. Leave out anything that doesn't.
+Read paragraph by paragraph. Record every key event and relationship this article describes within TOPIC. Find the supporting sentence first, then decide whether something belongs; never settle on a pathway shape and then look for sentences to fit it. When TOPIC names more than one subject (for example "oxidative stress and CFTR" names two subjects: oxidative stress, and CFTR), every key event and relationship must connect, directly or through the chain, to each of those subjects. Leave out any key event or relationship that does not connect to each subject.
 
 Record whatever shape the article describes (chain, branches, convergence, loops). Don't force one line and don't invent branches.
 
